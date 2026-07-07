@@ -1,6 +1,6 @@
 # LewisWhisper — native Swift app (Phase 1)
 
-Menu-bar push-to-talk dictation, fully local: **hold RIGHT OPTION → speak → release → cleaned text pastes into the focused app.**
+Menu-bar push-to-talk dictation, fully local: **hold RIGHT OPTION → speak → release → cleaned text pastes into the focused app.** Or **quick-tap** for hands-free recording that ends on the next tap or ~1 s of silence.
 
 Pipeline: CGEvent tap hotkey → AVAudioEngine (16 kHz mono) → Parakeet TDT 0.6B v3 on the Neural Engine (FluidAudio) → gemma3:4b cleanup via Ollama → pasteboard + synthetic Cmd+V.
 

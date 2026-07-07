@@ -84,11 +84,21 @@ final class AppController: NSObject, NSApplicationDelegate {
     private var contextAware: Bool {
         didSet { UserDefaults.standard.set(contextAware, forKey: "contextAwareness") }
     }
+    private var autoStop: Bool {
+        didSet { UserDefaults.standard.set(autoStop, forKey: "autoStopSilence") }
+    }
+    // capture state: hold = walkie-talkie, quick tap = hands-free until the
+    // next tap or ~1.2s of post-speech silence
+    private var capturing = false
+    private var handsFree = false
+    private var pressedAt: Date?
+    private var silenceTimer: Timer?
 
     init(options: Options) {
         self.options = options
         self.level = options.level
         self.contextAware = options.contextAware
+        self.autoStop = UserDefaults.standard.object(forKey: "autoStopSilence") as? Bool ?? true
         self.monitor = HotkeyMonitor(key: options.hotkey)
         self.cleaner = CleanupClient(model: options.model)
         super.init()
@@ -188,6 +198,11 @@ final class AppController: NSObject, NSApplicationDelegate {
         ctxItem.state = contextAware ? .on : .off
         menu.addItem(ctxItem)
 
+        let autoItem = NSMenuItem(title: "Auto-stop on Silence", action: #selector(toggleAutoStop), keyEquivalent: "")
+        autoItem.target = self
+        autoItem.state = autoStop ? .on : .off
+        menu.addItem(autoItem)
+
         let dictItem = NSMenuItem(title: "Edit Personal Dictionary…", action: #selector(editDictionary), keyEquivalent: "")
         dictItem.target = self
         menu.addItem(dictItem)
@@ -214,6 +229,11 @@ final class AppController: NSObject, NSApplicationDelegate {
         rebuildMenu(blocked: false)
     }
 
+    @objc private func toggleAutoStop() {
+        autoStop.toggle()
+        rebuildMenu(blocked: false)
+    }
+
     @objc private func editDictionary() {
         PersonalDictionary.openInEditor()
     }
@@ -235,9 +255,16 @@ final class AppController: NSObject, NSApplicationDelegate {
     }
 
     private func startDictation() {
-        guard !busy, transcriber != nil else { return }
+        guard transcriber != nil else { return }
+        if handsFree {
+            stopCapture()  // tap while hands-free = finish
+            return
+        }
+        guard !busy, !capturing else { return }
         do {
             try recorder.start()
+            capturing = true
+            pressedAt = Date()
             setIcon(recording: true)
             print("\n● recording...")
         } catch {
@@ -246,8 +273,42 @@ final class AppController: NSObject, NSApplicationDelegate {
     }
 
     private func finishDictation() {
-        guard transcriber != nil else { return }
-        let samples = recorder.stop()
+        guard capturing, !handsFree else { return }  // release is meaningless in hands-free
+        let held = pressedAt.map { Date().timeIntervalSince($0) } ?? 1.0
+        if held < 0.35 {
+            // quick tap: switch to hands-free capture
+            handsFree = true
+            print("● hands-free — tap again or pause ~1s to finish")
+            startSilenceWatch()
+        } else {
+            stopCapture()
+        }
+    }
+
+    private func stopCapture() {
+        silenceTimer?.invalidate()
+        silenceTimer = nil
+        handsFree = false
+        guard capturing else { return }
+        capturing = false
+        process(recorder.stop())
+    }
+
+    private func startSilenceWatch() {
+        guard autoStop else { return }
+        silenceTimer = Timer.scheduledTimer(withTimeInterval: 0.25, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated {
+                guard let self, self.handsFree, self.capturing else { return }
+                let v = self.recorder.voiceStatus()
+                // stop after 1.2s of silence once speech was heard; 3 min hard cap
+                if (v.heardVoice && v.silenceSeconds > 1.2) || v.duration > 180 {
+                    self.stopCapture()
+                }
+            }
+        }
+    }
+
+    private func process(_ samples: [Float]) {
         setIcon(idle: true, loading: false)
         let duration = Double(samples.count) / AudioRecorder.sampleRate
         guard duration >= 0.3 else {

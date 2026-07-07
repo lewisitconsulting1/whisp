@@ -41,4 +41,5 @@ scripts/package-app.sh && cp -R dist/LewisWhisper.app /Applications/
 - [x] Phase 1 — native Swift menu-bar app
 - [x] Phase 2 — .app bundle + signing, first-launch permission UX, MIT license
 - [x] Phase 3 — cleanup intensity levels (Off/Light/Medium/High), personal dictionary, context awareness
-- [ ] Phase 4 — auto-learned dictionary, per-app tone presets, settings UI
+- [x] Phase 4 — hands-free tap-to-record with silence auto-stop
+- [ ] Phase 5 — auto-learned dictionary, per-app tone presets, settings UI
