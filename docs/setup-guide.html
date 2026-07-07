@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>LewisWhisper — Setup Guide</title>
+<style>
+  @page { margin: 18mm 16mm; }
+  body { font-family: -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif; color: #1a1a1a; font-size: 11.5px; line-height: 1.5; max-width: 175mm; margin: 0 auto; }
+  .brand { text-align: center; margin-bottom: 4px; }
+  .brand img { height: 88px; }
+  .credit { text-align: center; color: #666; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 18px; }
+  h1 { font-size: 21px; margin: 0 0 8px; border-bottom: 2px solid #1a1a1a; padding-bottom: 8px; }
+  h2 { font-size: 14.5px; margin: 20px 0 6px; }
+  .lead { font-size: 12px; color: #333; }
+  code { background: #f2f2f0; padding: 1px 5px; border-radius: 3px; font-family: "SF Mono", Menlo, monospace; font-size: 10px; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0; }
+  th, td { border: 1px solid #ddd; padding: 6px 8px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f4; }
+  ol li, ul li { margin-bottom: 4px; }
+  .trouble p { margin: 7px 0; }
+  .pagebreak { page-break-before: always; }
+  .footer { margin-top: 26px; padding-top: 8px; border-top: 1px solid #ccc; color: #777; font-size: 9.5px; text-align: center; }
+  hr { border: none; border-top: 1px solid #ddd; margin: 14px 0; }
+</style>
+</head>
+<body>
+
+<div class="brand"><img src="../assets/lewis-it-logo.png" alt="Lewis IT Consulting"></div>
+<div class="credit">Created by Chadwick Lewis &middot; Lewis IT Consulting</div>
+
+<h1>LewisWhisper — Setup Guide</h1>
+
+<p class="lead"><b>Local voice dictation for your Mac.</b> Hold a key, speak, release — your words appear in whatever app you're typing in, cleaned up into proper sentences. Everything runs on your Mac: no cloud, no account, no subscription, and your voice never leaves the machine.</p>
+
+<h2>What you need</h2>
+<ul>
+  <li>A Mac with an <b>Apple Silicon</b> chip (M1 or newer — 2020 and later)</li>
+  <li><b>macOS 14</b> (Sonoma) or newer</li>
+  <li>About <b>6 GB of free disk space</b> (AI models)</li>
+  <li>Internet connection <b>for setup only</b> (model downloads); after that it works fully offline</li>
+</ul>
+
+<h2>Install (the easy way)</h2>
+<ol>
+  <li>Unzip the folder you received.</li>
+  <li>Double-click <code>setup.command</code>. If macOS says it can't verify the developer: <b>right-click → Open → Open</b>.</li>
+  <li>Follow the prompts. The script installs the app, installs/starts <b>Ollama</b> (the free program that runs the cleanup AI), and downloads the AI model (~3.3 GB, one time).</li>
+  <li>When LewisWhisper launches, a <b>⚠️ icon</b> appears in the menu bar (top-right of your screen, near the clock). Grant the three permissions it asks for:
+    <ul>
+      <li><b>Microphone</b> — click <i>Allow</i> on the popup</li>
+      <li><b>Input Monitoring</b> — System Settings opens; turn the <b>LewisWhisper</b> switch ON</li>
+      <li><b>Accessibility</b> — same, turn the switch ON</li>
+    </ul>
+  </li>
+  <li><b>Quit the app</b> (click the ⚠️/soundwave icon → Quit LewisWhisper) and <b>open it once more</b> from Applications. macOS applies some permissions only to a freshly started app.</li>
+  <li>First launch downloads the speech-recognition models (~2.5 GB). The icon shows <b>…</b> while loading — give it a few minutes the first time. When you see the <b>soundwave icon</b>, you're ready.</li>
+</ol>
+
+<h2>Install (manual, if you prefer)</h2>
+<ol>
+  <li>Drag <b>LewisWhisper.app</b> into your <b>Applications</b> folder.</li>
+  <li>Open <b>Terminal</b> and run: <code>xattr -cr /Applications/LewisWhisper.app</code> (clears the "unverified developer" block).</li>
+  <li>Install Ollama from <b>ollama.com/download</b>, open it once, then run in Terminal: <code>ollama pull gemma3:4b</code></li>
+  <li>Open LewisWhisper and continue from step 4 above.</li>
+</ol>
+
+<div class="pagebreak"></div>
+
+<h2>Using it</h2>
+<p><b>Hold the RIGHT OPTION (⌥) key, speak, let go.</b> Your words paste into whatever app has the cursor — Mail, Messages, Word, Slack, anywhere. A 5-second sentence lands in about a second.</p>
+<p>The menu bar icon shows what's happening: <b>soundwave</b> = ready &middot; 🔴 = recording &middot; ⏳ = transcribing &middot; <b>…</b> = loading &middot; ⚠️ = needs permissions.</p>
+<p>Click the icon for options:</p>
+<table>
+  <tr><th style="width:32%">Menu item</th><th>What it does</th></tr>
+  <tr><td><b>Cleanup</b></td><td>How much the AI tidies your speech. <b>Off</b> = your exact words. <b>Light</b> = removes "um"s, fixes punctuation (recommended). <b>Medium</b> = also smooths clumsy sentences. <b>High</b> = rewrites for brevity.</td></tr>
+  <tr><td><b>Context Awareness</b></td><td>Lets the cleanup AI see which app you're in (and nearby text) so tone and spelling fit. Passwords are never read.</td></tr>
+  <tr><td><b>Edit Personal Dictionary…</b></td><td>A text file of names and jargon it should always spell right — one per line (e.g. your name, company, product names). For stubborn words, add a hint: <code>Ollama (often misheard as Alema)</code>. Changes apply instantly.</td></tr>
+  <tr><td><b>About LewisWhisper</b></td><td>Version and credits.</td></tr>
+</table>
+<p><b>Tip:</b> add the names of people and products you say often to the Personal Dictionary right away — it's the single biggest accuracy upgrade.</p>
+
+<hr>
+
+<h2>Troubleshooting</h2>
+<div class="trouble">
+<p><b>"LewisWhisper can't be opened / is damaged"</b> — the app isn't in Apple's registry (it's homemade, not from the App Store). Right-click the app → <b>Open</b> → <b>Open</b>, or run <code>xattr -cr /Applications/LewisWhisper.app</code> in Terminal.</p>
+<p><b>⚠️ icon won't go away after granting permissions</b> — quit the app (menu → Quit) and reopen it. If it <i>still</i> shows ⚠️: open the System Settings pane it names, <b>remove</b> the LewisWhisper entry with the <b>−</b> button, then reopen the app and grant fresh when it asks. (macOS ties permissions to the exact copy of the app; a stale entry looks ON but does nothing.)</p>
+<p><b>Dictation pastes my exact words with the "um"s left in</b> — the cleanup AI isn't reachable. Make sure <b>Ollama</b> is running (menu bar llama icon, or just open the Ollama app) and the model is installed: <code>ollama pull gemma3:4b</code>. Dictation itself keeps working either way — you never lose words.</p>
+<p><b>Nothing happens when I hold right Option</b> — check the icon isn't ⚠️, and make sure you're using the option key on the <b>right</b> side of the space bar.</p>
+<p><b>First dictation after a long break is slow</b> — the cleanup model reloads after ~30 min idle. One slow response, then it's fast again.</p>
+</div>
+
+<hr>
+
+<h2>Privacy</h2>
+<p>Your audio is processed entirely on this Mac: speech recognition runs on the Apple Neural Engine, and text cleanup runs in Ollama locally. Nothing is uploaded, logged, or shared. The app needs internet exactly once — to download its AI models during setup.</p>
+
+<div class="footer">LewisWhisper 0.3.1 &middot; Created by Chadwick Lewis &middot; Lewis IT Consulting &middot; MIT licensed &middot; github.com/lewisitconsulting1/whisp</div>
+
+</body>
+</html>

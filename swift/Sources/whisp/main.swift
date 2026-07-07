@@ -193,6 +193,9 @@ final class AppController: NSObject, NSApplicationDelegate {
         menu.addItem(dictItem)
 
         menu.addItem(.separator())
+        let aboutItem = NSMenuItem(title: "About LewisWhisper", action: #selector(showAbout), keyEquivalent: "")
+        aboutItem.target = self
+        menu.addItem(aboutItem)
         let quitItem = NSMenuItem(title: "Quit LewisWhisper", action: #selector(quit), keyEquivalent: "q")
         quitItem.target = self
         menu.addItem(quitItem)
@@ -213,6 +216,16 @@ final class AppController: NSObject, NSApplicationDelegate {
 
     @objc private func editDictionary() {
         PersonalDictionary.openInEditor()
+    }
+
+    @objc private func showAbout() {
+        NSApp.activate(ignoringOtherApps: true)
+        NSApp.orderFrontStandardAboutPanel(options: [
+            .credits: NSAttributedString(
+                string: "Created by Chadwick Lewis\nLewis IT Consulting\n\nFully local dictation — your voice never leaves this Mac.",
+                attributes: [.font: NSFont.systemFont(ofSize: 11)]
+            )
+        ])
     }
 
     @objc private func openSettings(_ sender: NSMenuItem) {
