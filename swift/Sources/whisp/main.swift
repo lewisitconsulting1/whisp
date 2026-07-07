@@ -23,7 +23,7 @@ struct Options {
             case "--selftest":
                 if let v = it.next() { o.selftest = v }
             case "--help", "-h":
-                print("usage: LewisWisper [--cleanup off|light] [--model gemma3:4b] [--hotkey alt_r|cmd_r|ctrl_r] [--selftest file.wav]")
+                print("usage: LewisWhisper [--cleanup off|light] [--model gemma3:4b] [--hotkey alt_r|cmd_r|ctrl_r] [--selftest file.wav]")
                 exit(0)
             default:
                 break
@@ -140,7 +140,7 @@ final class AppController: NSObject, NSApplicationDelegate {
     private func rebuildMenu(blocked: Bool) {
         let menu = NSMenu()
         if blocked {
-            let header = NSMenuItem(title: "Grant permissions to use LewisWisper:", action: nil, keyEquivalent: "")
+            let header = NSMenuItem(title: "Grant permissions to use LewisWhisper:", action: nil, keyEquivalent: "")
             header.isEnabled = false
             menu.addItem(header)
             for kind in Permissions.missing {
@@ -151,7 +151,7 @@ final class AppController: NSObject, NSApplicationDelegate {
             }
             menu.addItem(.separator())
         }
-        let quitItem = NSMenuItem(title: "Quit LewisWisper", action: #selector(quit), keyEquivalent: "q")
+        let quitItem = NSMenuItem(title: "Quit LewisWhisper", action: #selector(quit), keyEquivalent: "q")
         quitItem.target = self
         menu.addItem(quitItem)
         statusItem.menu = menu
@@ -208,9 +208,26 @@ final class AppController: NSObject, NSApplicationDelegate {
         }
     }
 
+    /// Soundwave template image from the bundle (adapts to menu bar light/dark);
+    /// nil when running the bare binary from a terminal — emoji fallback.
+    private static let menuBarImage: NSImage? = {
+        guard let url = Bundle.main.url(forResource: "MenuBarIcon", withExtension: "png"),
+              let img = NSImage(contentsOf: url) else { return nil }
+        img.isTemplate = true
+        img.size = NSSize(width: 18, height: 18)
+        return img
+    }()
+
     private func setIcon(idle: Bool = false, loading: Bool = false, recording: Bool = false, working: Bool = false, blocked: Bool = false) {
-        let title = blocked ? "⚠️" : recording ? "🔴" : working ? "⏳" : loading ? "…" : "🎙"
-        statusItem?.button?.title = title
+        guard let button = statusItem?.button else { return }
+        let transient = blocked || recording || working || loading
+        if !transient, let img = Self.menuBarImage {
+            button.image = img
+            button.title = ""
+        } else {
+            button.image = nil
+            button.title = blocked ? "⚠️" : recording ? "🔴" : working ? "⏳" : loading ? "…" : "🎙"
+        }
     }
 
     @objc private func quit() {

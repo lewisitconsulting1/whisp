@@ -5,3 +5,4 @@ bench/.venv/
 bench/models/
 swift/.build/
 *.aiff
+assets/AppIcon.iconset/

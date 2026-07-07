@@ -1,4 +1,4 @@
-# LewisWisper — native Swift app (Phase 1)
+# LewisWhisper — native Swift app (Phase 1)
 
 Menu-bar push-to-talk dictation, fully local: **hold RIGHT OPTION → speak → release → cleaned text pastes into the focused app.**
 
@@ -11,10 +11,10 @@ Requires only Xcode Command Line Tools (no full Xcode):
 ```bash
 cd swift
 swift build -c release
-.build/release/LewisWisper                    # default: gemma3:4b, light cleanup
-.build/release/LewisWisper --cleanup off      # raw transcript, fastest
-.build/release/LewisWisper --model llama3.1:latest
-.build/release/LewisWisper --hotkey cmd_r     # alt_r (default) | cmd_r | ctrl_r
+.build/release/LewisWhisper                    # default: gemma3:4b, light cleanup
+.build/release/LewisWhisper --cleanup off      # raw transcript, fastest
+.build/release/LewisWhisper --model llama3.1:latest
+.build/release/LewisWhisper --hotkey cmd_r     # alt_r (default) | cmd_r | ctrl_r
 ```
 
 A 🎙 icon appears in the menu bar ("…" while the model loads, 🔴 recording, ⏳ transcribing). Quit from the menu or Ctrl+C in the terminal.
@@ -26,7 +26,7 @@ First-ever launch downloads the Parakeet CoreML models from HuggingFace (~2.5 GB
 ## Headless pipeline check
 
 ```bash
-.build/release/LewisWisper --selftest ../bench/audio/fillers.wav
+.build/release/LewisWhisper --selftest ../bench/audio/fillers.wav
 ```
 
 Runs STT + cleanup on a WAV and exits — no permissions needed. Measured on this M4 Pro: **stt 0.11 s, llm 1.00 s, total 1.11 s** for 13.3 s of filler-laden speech.
@@ -42,12 +42,12 @@ Runs STT + cleanup on a WAV and exits — no permissions needed. Measured on thi
 ## .app bundle (Phase 2)
 
 ```bash
-../scripts/package-app.sh          # builds + assembles + signs dist/LewisWisper.app
-cp -R ../dist/LewisWisper.app /Applications/
+../scripts/package-app.sh          # builds + assembles + signs dist/LewisWhisper.app
+cp -R ../dist/LewisWhisper.app /Applications/
 ```
 
-Signs with a "Developer ID Application" cert if you have one, else ad-hoc (personal use; ad-hoc TCC grants can reset when the binary changes — re-grant after rebuilds). The bundled app carries the mic entitlements macOS 26+ requires and its own permission UX: on first launch it fires the three system permission prompts, shows ⚠️ in the menu bar with "Open … Settings" shortcuts for anything still missing, and starts automatically once everything is granted. Permissions attach to `com.lewisitconsulting.lewiswisper` itself, not your terminal.
+Signs with a "Developer ID Application" cert if you have one, else ad-hoc (personal use; ad-hoc TCC grants can reset when the binary changes — re-grant after rebuilds). The bundled app carries the mic entitlements macOS 26+ requires and its own permission UX: on first launch it fires the three system permission prompts, shows ⚠️ in the menu bar with "Open … Settings" shortcuts for anything still missing, and starts automatically once everything is granted. Permissions attach to `com.lewisitconsulting.lewiswhisper` itself, not your terminal.
 
 ## Not yet done (Phase 3)
 
-Cleanup intensity levels beyond light, personal dictionary (fixes proper-noun spellings and gemma's occasional greeting/hedge-word drops), near-cursor context awareness, settings UI, custom menu-bar icon.
+Cleanup intensity levels beyond light, personal dictionary (fixes proper-noun spellings and gemma's occasional greeting/hedge-word drops), near-cursor context awareness, settings UI.
