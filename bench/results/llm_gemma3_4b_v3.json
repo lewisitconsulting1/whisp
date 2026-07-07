@@ -1,0 +1,45 @@
+[
+  {
+    "model": "gemma3:4b",
+    "think": null,
+    "prompt": "v3",
+    "runs": {
+      "short_12w": {
+        "ttft_s": 0.275,
+        "total_s": 0.46,
+        "eval_tokens": 15,
+        "tok_per_s": 80.9,
+        "output": "So, can you send me the report by Friday, you know?",
+        "quality": {
+          "fillers_removed": true,
+          "len_ratio": 0.85,
+          "meta_commentary": false
+        }
+      },
+      "medium_35w": {
+        "ttft_s": 0.278,
+        "total_s": 0.805,
+        "eval_tokens": 41,
+        "tok_per_s": 77.8,
+        "output": "So, I was thinking that we should probably move the standup to you know Thursday morning because um half the team is like traveling on Wednesday and uh I mean it just makes more sense that way.",
+        "quality": {
+          "fillers_removed": false,
+          "len_ratio": 0.95,
+          "meta_commentary": false
+        }
+      },
+      "long_65w": {
+        "ttft_s": 0.274,
+        "total_s": 1.321,
+        "eval_tokens": 79,
+        "tok_per_s": 75.5,
+        "output": "Okay, so quick update on the Whisper Flow Clone project. The speech recognition benchmark finished this morning and parakeet came out ahead of like every whisper variant we tested on the M4 Pro. So, next step is wiring the transcript into Ollama for cleanup probably with Gemma or Qwen and then uh measuring whether the end to end latency you know stays under one and a half seconds.",
+        "quality": {
+          "fillers_removed": false,
+          "len_ratio": 0.93,
+          "meta_commentary": false
+        }
+      }
+    }
+  }
+]

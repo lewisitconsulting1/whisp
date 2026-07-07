@@ -1,0 +1,6 @@
+{
+  "short": "Hey Sarah, can you send me the quarterly Kubernetes migration report by Friday afternoon?",
+  "medium": "I just got off the call with the Anthropic team about the PostgreSQL upgrade. We need to schedule the failover test for Tuesday, loop in Priya Nguyen from infrastructure, and make sure the Terraform state files are backed up before anyone touches the staging cluster.",
+  "long": "Quick update on the Wispr Flow clone project. The speech recognition benchmark finished this morning and Parakeet came out ahead of every Whisper variant we tested on the M4 Pro. Next step is wiring the transcript into Ollama for cleanup, probably with Gemma or Qwen, and then measuring whether the end to end latency stays under one and a half seconds. If it does, we can start porting the prototype to Swift next week and get the menu bar app into TestFlight before the end of the month.",
+  "fillers": "So um, I was thinking that we should, uh, probably move the standup to, you know, Thursday morning because, um, half the team is like traveling on Wednesday and, uh, I mean, it just makes more sense that way."
+}

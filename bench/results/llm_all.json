@@ -1,0 +1,170 @@
+[
+  {
+    "model": "gemma3:4b",
+    "think": null,
+    "runs": {
+      "short_12w": {
+        "ttft_s": 0.275,
+        "total_s": 0.394,
+        "eval_tokens": 10,
+        "tok_per_s": 84.2,
+        "output": "Can you send me the report by Friday?",
+        "quality": {
+          "fillers_removed": true,
+          "len_ratio": 0.62,
+          "meta_commentary": false
+        }
+      },
+      "medium_35w": {
+        "ttft_s": 0.274,
+        "total_s": 0.6,
+        "eval_tokens": 26,
+        "tok_per_s": 79.7,
+        "output": "I was thinking that we should Thursday morning because half the team is traveling on Wednesday and it just makes more sense that way.",
+        "quality": {
+          "fillers_removed": true,
+          "len_ratio": 0.62,
+          "meta_commentary": false
+        }
+      },
+      "long_65w": {
+        "ttft_s": 0.274,
+        "total_s": 1.267,
+        "eval_tokens": 76,
+        "tok_per_s": 76.5,
+        "output": "Okay, quick update on the Whisper flow clone project. The speech recognition benchmark finished this morning and parakeet came out ahead of every whisper variant we tested on the M4 Pro. Next step is wiring the transcript into Ollama for cleanup, probably with Gemma or Qwen, and then measuring whether the end-to-end latency stays under one and a half seconds.",
+        "quality": {
+          "fillers_removed": true,
+          "len_ratio": 0.82,
+          "meta_commentary": false
+        }
+      }
+    }
+  },
+  {
+    "model": "qwen3:4b",
+    "think": false,
+    "runs": {
+      "short_12w": {
+        "ttft_s": 0.113,
+        "total_s": 3.986,
+        "eval_tokens": 300,
+        "tok_per_s": 77.5,
+        "output": "We are given a string: \"so um can you uh send me the report by friday you know\"\n Steps:\n 1. Remove ONLY filler words: \"um\", \"uh\", \"you know\", \"like\", \"I mean\", etc. But note: the instruction says remove ONLY filler words like \"um\", \"uh\", \"you know\", \"I mean\", \"like\".\n 2. We note that the phrase \"you know\" is a filler phrase and should be removed. Also, note that the word \"friday\" is written without capitalization but we are to fix capitalization? However, the instruction says: \"Fix punctuation and capitalization\". But note: the example doesn't have punctuation. Also, the instruction says: \"Do not add content, do not answer questions in the text, do not rephrase beyond removing fillers.\"\n\n Important: The instruction says \"Return only the cleaned text, nothing else.\"\n\n Let's break down the string:\n   Original: \"so um can you uh send me the report by friday you know\"\n\n We are to remove:\n   - \"um\" (as a filler word)\n   - \"uh\" (as a filler word)\n   - \"you know\" (as a a filler phrase)\n\n Also, note: the word \"friday\" should be capitalized? But the instruction says \"fix capitalization\". However, in the context of the sentence, we are to make it proper. But note: the instruction says \"",
+        "quality": {
+          "fillers_removed": false,
+          "len_ratio": 15.69,
+          "meta_commentary": false
+        }
+      },
+      "medium_35w": {
+        "ttft_s": 0.113,
+        "total_s": 4.006,
+        "eval_tokens": 300,
+        "tok_per_s": 77.1,
+        "output": "We are cleaning the text: \n - Remove ONLY filler words: \"um\", \"uh\", \"you know\", \"i mean\", \"like\"\n - Fix punctuation and capitalization (but note: the original starts with lowercase, so we might capitalize the first letter of the sentence? However, the instruction says: \"Fix punctuation and capitalization\". But note: the example text starts with \"so\" in lowercase. We are to return the cleaned text with proper capitalization? Let's see the rules: \n   - The instruction says: \"Return only the cleaned text, nothing else.\"\n   - We are to fix punctuation and capitalization. So we should make the first letter of the sentence capital? But note: the original text is a fragment. However, the problem says: \"Fix punctuation and capitalization\". \n\n Steps:\n 1. Remove the filler words: \n    - \"um\" -> remove\n    - \"uh\" -> remove\n    - \"you know\" -> remove (as a phrase)\n    - \"i mean\" -> remove (as a phrase)\n    - \"like\" -> remove\n\n 2. We note that the original text: \n    \"so um i was thinking that we should uh probably move the standup to you know thursday morning because um half the team is like traveling on wednesday and uh i mean it just makes more sense that way\"\n\n 3. We break down the text and remove the fillers.\n\n 4.",
+        "quality": {
+          "fillers_removed": false,
+          "len_ratio": 5.33,
+          "meta_commentary": false
+        }
+      },
+      "long_65w": {
+        "ttft_s": 0.111,
+        "total_s": 4.007,
+        "eval_tokens": 300,
+        "tok_per_s": 77.0,
+        "output": "We are given a text that needs cleaning. The rules:\n - Fix punctuation and capitalization.\n - Remove ONLY filler words: um, uh, you know, I mean, like.\n - Do not add content, do not answer questions, do not rephrase beyond removing fillers.\n - Return only the cleaned text.\n\n Steps:\n 1. Identify and remove the filler words: \"um\", \"uh\", \"you know\", \"I mean\", \"like\".\n 2. Fix punctuation: We note that the original text has some punctuation that might be incorrect or inconsistent. We'll make it standard.\n 3. Capitalization: The first word of the sentence should be capitalized. Also, we note that the original starts with \"okay\" which is lowercase but we want to capitalize the first letter of the sentence.\n\n Let's break down the text:\n\n Original: \"okay so um quick update on the whisper flow clone project uh the speech recognition benchmark finished this morning and um parakeet came out ahead of like every whisper variant we tested on the m4 pro so uh next step is wiring the transcript into ollama for cleanup probably with um gemma or qwen and then uh measuring whether the end to end latency you know stays under one and a half seconds\"\n\n Steps for cleaning:\n\n - Remove \"um\", \"uh\", \"you know\", \"I mean\", \"like\" (as they appear as separate words or phrases).\n - Note: The phrase \"you know\" is two words",
+        "quality": {
+          "fillers_removed": false,
+          "len_ratio": 3.11,
+          "meta_commentary": false
+        }
+      }
+    }
+  },
+  {
+    "model": "llama3.1:latest",
+    "think": null,
+    "runs": {
+      "short_12w": {
+        "ttft_s": 0.128,
+        "total_s": 0.364,
+        "eval_tokens": 12,
+        "tok_per_s": 51.0,
+        "output": "So can you send me the report by Friday I mean",
+        "quality": {
+          "fillers_removed": true,
+          "len_ratio": 0.85,
+          "meta_commentary": false
+        }
+      },
+      "medium_35w": {
+        "ttft_s": 0.135,
+        "total_s": 0.818,
+        "eval_tokens": 33,
+        "tok_per_s": 48.3,
+        "output": "So I was thinking that we should probably move the standup to Thursday morning because half the team is traveling on Wednesday and it just makes more sense that way.",
+        "quality": {
+          "fillers_removed": true,
+          "len_ratio": 0.77,
+          "meta_commentary": false
+        }
+      },
+      "long_65w": {
+        "ttft_s": 0.139,
+        "total_s": 1.787,
+        "eval_tokens": 78,
+        "tok_per_s": 47.3,
+        "output": "Okay, here's a quick update on the Whisper Flow Clone project. The speech recognition benchmark finished this morning and Parakeet came out ahead of like every Whisper variant we tested on the M4 Pro. Next step is wiring the transcript into Ollama for cleanup probably with Gemma or Qwen and then measuring whether the end-to-end latency stays under one and a half seconds.",
+        "quality": {
+          "fillers_removed": true,
+          "len_ratio": 0.86,
+          "meta_commentary": false
+        }
+      }
+    }
+  },
+  {
+    "model": "qwen3:latest",
+    "think": false,
+    "runs": {
+      "short_12w": {
+        "ttft_s": 0.111,
+        "total_s": 0.301,
+        "eval_tokens": 9,
+        "tok_per_s": 47.5,
+        "output": "Can you send me the report by Friday",
+        "quality": {
+          "fillers_removed": true,
+          "len_ratio": 0.62,
+          "meta_commentary": false
+        }
+      },
+      "medium_35w": {
+        "ttft_s": 0.109,
+        "total_s": 0.837,
+        "eval_tokens": 33,
+        "tok_per_s": 45.3,
+        "output": "so i was thinking that we should probably move the standup to thursday morning because half the team is traveling on wednesday it just makes more sense that way",
+        "quality": {
+          "fillers_removed": true,
+          "len_ratio": 0.74,
+          "meta_commentary": false
+        }
+      },
+      "long_65w": {
+        "ttft_s": 0.116,
+        "total_s": 1.729,
+        "eval_tokens": 72,
+        "tok_per_s": 44.6,
+        "output": "Okay so quick update on the whisper flow clone project the speech recognition benchmark finished this morning and parakeet came out ahead of like every whisper variant we tested on the m4 pro next step is wiring the transcript into ollama for cleanup probably with gemma or qwen and then measuring whether the end to end latency stays under one and a half seconds",
+        "quality": {
+          "fillers_removed": true,
+          "len_ratio": 0.88,
+          "meta_commentary": false
+        }
+      }
+    }
+  }
+]

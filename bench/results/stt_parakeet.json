@@ -1,0 +1,29 @@
+[
+  {
+    "engine": "parakeet-mlx",
+    "model": "mlx-community/parakeet-tdt-0.6b-v3",
+    "load_s": 2.361,
+    "runs": {
+      "short": {
+        "warm_s": 0.141,
+        "wer": 0.0,
+        "text": "Hey Sarah, can you send me the quarterly Kubernetes migration report by Friday afternoon?"
+      },
+      "medium": {
+        "warm_s": 0.232,
+        "wer": 0.0889,
+        "text": "I just got off the call with the Anthropic team about the PostGur SQL upgrade, we need to schedule the failover test for Tuesday, loop in pre-a-win from infrastructure, and make sure the Terraform state files are backed up before anyone touches the staging cluster."
+      },
+      "long": {
+        "warm_s": 0.373,
+        "wer": 0.1477,
+        "text": "Quick update on the Whisperflow clone project. The speech recognition benchmark finished this morning and Parakeet came out ahead of every Whisper variant we tested on the M4 Pro. Next step is wiring the transcript into Alema for cleanup, probably with Gemma or Quen, and then measuring whether the end-to-end latency stays under 1.5 seconds. If it does, we can start porting the prototype to Swift next week and get the menu bar app into test flight before the end of the month."
+      },
+      "medium_uk": {
+        "warm_s": 0.233,
+        "wer": 0.1111,
+        "text": "I just got off the call with the anthropic team about the PostgresQL upgrade. We need to schedule the fail of a test for Tuesday, loop in Cryon when from infrastructure, and make sure the Terraform state files are backed up before anyone touches the staging cluster."
+      }
+    }
+  }
+]

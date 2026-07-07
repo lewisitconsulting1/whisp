@@ -1,0 +1,37 @@
+# whisp
+
+A fully-local [Wispr Flow](https://wisprflow.ai/) clone for macOS: hold a hotkey, speak, release — your words land in the focused app as clean, punctuated text. Speech-to-text runs on the Neural Engine (Parakeet TDT 0.6B via FluidAudio), transcript cleanup runs on a local LLM via Ollama. No cloud, no network, no subscription.
+
+## Layout
+
+| Path | What |
+|---|---|
+| [swift/](swift/) | **The app** — native Swift menu-bar push-to-talk dictation (Phase 1) |
+| [prototype/](prototype/) | Python proof-of-concept of the same pipeline (Phase 0) |
+| [bench/](bench/) | STT + LLM benchmark scripts, test audio, raw results |
+| [RESEARCH.md](RESEARCH.md) | Fact-checked research: how Wispr Flow works, design space, build plan |
+| [BENCHMARKS.md](BENCHMARKS.md) | Measured engine/model comparisons on this M4 Pro |
+
+## Quick start
+
+```bash
+cd swift && swift build -c release && .build/release/whisp
+```
+
+Hold **right Option** to dictate. See [swift/README.md](swift/README.md) for permissions and options.
+
+## Measured performance (M4 Pro, 48 GB)
+
+| | STT | LLM cleanup | Total |
+|---|---|---|---|
+| 13 s rambling utterance | 0.11 s | 1.0 s | **1.11 s** |
+| Typical short dictation (est.) | ~0.1 s | ~0.4 s | **~0.5 s** |
+
+Wispr Flow's cloud pipeline targets 700 ms p99 — whisp matches it offline.
+
+## Roadmap
+
+- [x] Phase 0 — research, benchmarks, Python prototype
+- [x] Phase 1 — native Swift menu-bar app (terminal-run)
+- [ ] Phase 2 — cleanup intensity levels, .app bundle + signing
+- [ ] Phase 3 — personal dictionary, near-cursor context awareness, per-app tone

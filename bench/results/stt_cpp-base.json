@@ -1,0 +1,29 @@
+[
+  {
+    "engine": "whisper.cpp",
+    "model": "whisper.cpp base.en",
+    "note": "per-call time includes process spawn + model load (CLI mode)",
+    "runs": {
+      "short": {
+        "warm_s": 0.237,
+        "wer": 0.0,
+        "text": "Hey Sarah, can you send me the quarterly Kubernetes Migration Report by Friday afternoon?"
+      },
+      "medium": {
+        "warm_s": 0.327,
+        "wer": 0.0667,
+        "text": "I just got off the call with the anthropic team about the post-GIR SQL upgrade. We need to schedule the failover test for Tuesday, loop in Priya Win from infrastructure, and make sure the Terraform state files are backed up before anyone touches the staging cluster."
+      },
+      "long": {
+        "warm_s": 0.474,
+        "wer": 0.1477,
+        "text": "Quick update on the WhisperFlow clone project. The speech recognition benchmark finished this morning and parakeet came out ahead of every Whisper variant we tested on the M4 Pro. Next step is wiring the transcript into Olima for cleanup, probably with Gemma or Quinn, and then measuring whether the end-to-end latency stays under 1.5 seconds. If it does, we can start porting the prototype to Swift next week and get the menu bar app into test flight before the end of the month."
+      },
+      "medium_uk": {
+        "warm_s": 0.319,
+        "wer": 0.1111,
+        "text": "I just got off the call with the anthropic team about the Postgresql upgrade. We need to schedule the fail of a test for Tuesday. Loop in Prion went from infrastructure and make sure the Terraform state files are backed up before anyone touches the staging cluster."
+      }
+    }
+  }
+]
