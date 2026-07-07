@@ -1,6 +1,6 @@
-# whisp
+# LewisWisper
 
-A fully-local [Wispr Flow](https://wisprflow.ai/) clone for macOS: hold a hotkey, speak, release — your words land in the focused app as clean, punctuated text. Speech-to-text runs on the Neural Engine (Parakeet TDT 0.6B via FluidAudio), transcript cleanup runs on a local LLM via Ollama. No cloud, no network, no subscription.
+A fully-local [Wispr Flow](https://wisprflow.ai/) clone for macOS (project codename `whisp`): hold a hotkey, speak, release — your words land in the focused app as clean, punctuated text. Speech-to-text runs on the Neural Engine (Parakeet TDT 0.6B via FluidAudio), transcript cleanup runs on a local LLM via Ollama. No cloud, no network, no subscription.
 
 ## Layout
 
@@ -15,7 +15,7 @@ A fully-local [Wispr Flow](https://wisprflow.ai/) clone for macOS: hold a hotkey
 ## Quick start
 
 ```bash
-cd swift && swift build -c release && .build/release/whisp
+cd swift && swift build -c release && .build/release/LewisWisper
 ```
 
 Hold **right Option** to dictate. See [swift/README.md](swift/README.md) for permissions and options.
@@ -32,7 +32,7 @@ Wispr Flow's cloud pipeline targets 700 ms p99 — whisp matches it offline.
 ## Install as an app
 
 ```bash
-scripts/package-app.sh && cp -R dist/whisp.app /Applications/
+scripts/package-app.sh && cp -R dist/LewisWisper.app /Applications/
 ```
 
 ## Roadmap

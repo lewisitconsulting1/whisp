@@ -23,7 +23,7 @@ struct Options {
             case "--selftest":
                 if let v = it.next() { o.selftest = v }
             case "--help", "-h":
-                print("usage: whisp [--cleanup off|light] [--model gemma3:4b] [--hotkey alt_r|cmd_r|ctrl_r] [--selftest file.wav]")
+                print("usage: LewisWisper [--cleanup off|light] [--model gemma3:4b] [--hotkey alt_r|cmd_r|ctrl_r] [--selftest file.wav]")
                 exit(0)
             default:
                 break
@@ -140,7 +140,7 @@ final class AppController: NSObject, NSApplicationDelegate {
     private func rebuildMenu(blocked: Bool) {
         let menu = NSMenu()
         if blocked {
-            let header = NSMenuItem(title: "Grant permissions to use whisp:", action: nil, keyEquivalent: "")
+            let header = NSMenuItem(title: "Grant permissions to use LewisWisper:", action: nil, keyEquivalent: "")
             header.isEnabled = false
             menu.addItem(header)
             for kind in Permissions.missing {
@@ -151,7 +151,7 @@ final class AppController: NSObject, NSApplicationDelegate {
             }
             menu.addItem(.separator())
         }
-        let quitItem = NSMenuItem(title: "Quit whisp", action: #selector(quit), keyEquivalent: "q")
+        let quitItem = NSMenuItem(title: "Quit LewisWisper", action: #selector(quit), keyEquivalent: "q")
         quitItem.target = self
         menu.addItem(quitItem)
         statusItem.menu = menu

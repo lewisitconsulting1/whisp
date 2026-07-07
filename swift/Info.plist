@@ -3,13 +3,13 @@
 <plist version="1.0">
 <dict>
     <key>CFBundleIdentifier</key>
-    <string>com.lewisitconsulting.whisp</string>
+    <string>com.lewisitconsulting.lewiswisper</string>
     <key>CFBundleName</key>
-    <string>whisp</string>
+    <string>LewisWisper</string>
     <key>CFBundleDisplayName</key>
-    <string>whisp</string>
+    <string>LewisWisper</string>
     <key>CFBundleExecutable</key>
-    <string>whisp</string>
+    <string>LewisWisper</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
@@ -21,6 +21,6 @@
     <key>LSUIElement</key>
     <true/>
     <key>NSMicrophoneUsageDescription</key>
-    <string>whisp records your voice while you hold the dictation hotkey, transcribes it on-device, and types it into the focused app. Audio never leaves this Mac.</string>
+    <string>LewisWisper records your voice while you hold the dictation hotkey, transcribes it on-device, and types it into the focused app. Audio never leaves this Mac.</string>
 </dict>
 </plist>

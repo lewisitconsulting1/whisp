@@ -1,5 +1,5 @@
 #!/bin/bash
-# Build whisp and assemble a signed .app bundle at dist/whisp.app.
+# Build LewisWisper and assemble a signed .app bundle at dist/LewisWisper.app.
 # Uses a "Developer ID Application" cert if one exists, else ad-hoc signs
 # (fine for personal use; ad-hoc TCC grants can reset when the binary changes).
 set -euo pipefail
@@ -8,10 +8,10 @@ cd "$(dirname "$0")/.."
 echo "building release..."
 swift build -c release --package-path swift
 
-APP="dist/whisp.app"
+APP="dist/LewisWisper.app"
 rm -rf dist
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
-cp swift/.build/release/whisp "$APP/Contents/MacOS/whisp"
+cp swift/.build/release/LewisWisper "$APP/Contents/MacOS/LewisWisper"
 cp swift/Info.plist "$APP/Contents/Info.plist"
 
 CERT=$(security find-identity -v -p codesigning 2>/dev/null | awk -F'"' '/Developer ID Application:/ {print $2; exit}' || true)
