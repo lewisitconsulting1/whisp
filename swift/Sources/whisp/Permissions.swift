@@ -1,43 +1,55 @@
+import AppKit
 import AVFoundation
 import ApplicationServices
 import CoreGraphics
 
 enum Permissions {
-    static func ensureAll() -> Bool {
-        var ok = true
+    enum Kind: String, CaseIterable {
+        case microphone = "Microphone"
+        case inputMonitoring = "Input Monitoring"
+        case accessibility = "Accessibility"
 
-        switch AVCaptureDevice.authorizationStatus(for: .audio) {
-        case .authorized:
-            break
-        case .notDetermined:
-            let sem = DispatchSemaphore(value: 0)
-            var granted = false
-            AVCaptureDevice.requestAccess(for: .audio) { g in
-                granted = g
-                sem.signal()
+        var settingsPane: String {
+            switch self {
+            case .microphone: return "Privacy_Microphone"
+            case .inputMonitoring: return "Privacy_ListenEvent"
+            case .accessibility: return "Privacy_Accessibility"
             }
-            sem.wait()
-            if !granted {
-                print("✗ Microphone permission denied")
-                ok = false
-            }
-        default:
-            print("✗ Microphone: enable in System Settings > Privacy & Security > Microphone")
-            ok = false
         }
 
-        if !CGPreflightListenEventAccess() {
+        var granted: Bool {
+            switch self {
+            case .microphone: return AVCaptureDevice.authorizationStatus(for: .audio) == .authorized
+            case .inputMonitoring: return CGPreflightListenEventAccess()
+            case .accessibility: return AXIsProcessTrusted()
+            }
+        }
+    }
+
+    static var missing: [Kind] {
+        Kind.allCases.filter { !$0.granted }
+    }
+
+    /// Fire the system prompts for everything not yet granted. Safe to call
+    /// repeatedly; already-granted or already-denied permissions no-op.
+    static func requestMissing() {
+        if !Kind.microphone.granted {
+            AVCaptureDevice.requestAccess(for: .audio) { _ in }
+        }
+        if !Kind.inputMonitoring.granted {
             CGRequestListenEventAccess()
-            print("✗ Input Monitoring: enable in System Settings > Privacy & Security > Input Monitoring, then relaunch")
-            ok = false
         }
-
-        let promptKey = "AXTrustedCheckOptionPrompt" as CFString
-        if !AXIsProcessTrustedWithOptions([promptKey: true] as CFDictionary) {
-            print("✗ Accessibility: enable in System Settings > Privacy & Security > Accessibility, then relaunch")
-            ok = false
+        if !Kind.accessibility.granted {
+            // string literal instead of the kAXTrustedCheckOptionPrompt global
+            // to avoid Swift concurrency complaints about the CFString global
+            _ = AXIsProcessTrustedWithOptions(["AXTrustedCheckOptionPrompt": true] as CFDictionary)
         }
+    }
 
-        return ok
+    static func openSettings(for kind: Kind) {
+        let url = "x-apple.systempreferences:com.apple.preference.security?\(kind.settingsPane)"
+        if let u = URL(string: url) {
+            NSWorkspace.shared.open(u)
+        }
     }
 }

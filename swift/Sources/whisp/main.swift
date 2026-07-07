@@ -66,6 +66,7 @@ final class AppController: NSObject, NSApplicationDelegate {
     private let cleaner: CleanupClient
     private var transcriber: Transcriber?
     private var statusItem: NSStatusItem!
+    private var permissionTimer: Timer?
     private var busy = false
 
     init(options: Options) {
@@ -77,15 +78,42 @@ final class AppController: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        setIcon(idle: false, loading: true)
-        let menu = NSMenu()
-        menu.addItem(NSMenuItem(title: "Quit whisp", action: #selector(quit), keyEquivalent: "q"))
-        menu.items.first?.target = self
-        statusItem.menu = menu
-
         monitor.onPress = { [weak self] in self?.startDictation() }
         monitor.onRelease = { [weak self] in self?.finishDictation() }
 
+        if Permissions.missing.isEmpty {
+            beginStartup()
+        } else {
+            enterPermissionBlockedState()
+        }
+    }
+
+    /// Bundled app launched from Finder has no terminal to read instructions
+    /// from: fire the system prompts, show what's missing in the menu, and
+    /// poll until everything is granted.
+    private func enterPermissionBlockedState() {
+        setIcon(blocked: true)
+        Permissions.requestMissing()
+        rebuildMenu(blocked: true)
+        print("waiting for permissions: \(Permissions.missing.map(\.rawValue).joined(separator: ", "))")
+        permissionTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { [weak self] _ in
+            // scheduledTimer fires on the main run loop
+            MainActor.assumeIsolated {
+                guard let self else { return }
+                guard Permissions.missing.isEmpty else {
+                    self.rebuildMenu(blocked: true)
+                    return
+                }
+                self.permissionTimer?.invalidate()
+                self.permissionTimer = nil
+                self.beginStartup()
+            }
+        }
+    }
+
+    private func beginStartup() {
+        setIcon(idle: false, loading: true)
+        rebuildMenu(blocked: false)
         Task {
             do {
                 let t = try await Transcriber.load()
@@ -95,8 +123,8 @@ final class AppController: NSObject, NSApplicationDelegate {
                     await self.cleaner.warmUp()
                 }
                 guard self.monitor.start() else {
-                    print("✗ could not create event tap — check Input Monitoring permission and relaunch")
-                    NSApp.terminate(nil)
+                    print("✗ could not create event tap despite Input Monitoring being granted")
+                    self.setIcon(blocked: true)
                     return
                 }
                 self.setIcon(idle: true, loading: false)
@@ -106,6 +134,32 @@ final class AppController: NSObject, NSApplicationDelegate {
                 print("✗ failed to load speech model: \(error)")
                 NSApp.terminate(nil)
             }
+        }
+    }
+
+    private func rebuildMenu(blocked: Bool) {
+        let menu = NSMenu()
+        if blocked {
+            let header = NSMenuItem(title: "Grant permissions to use whisp:", action: nil, keyEquivalent: "")
+            header.isEnabled = false
+            menu.addItem(header)
+            for kind in Permissions.missing {
+                let item = NSMenuItem(title: "Open \(kind.rawValue) Settings…", action: #selector(openSettings(_:)), keyEquivalent: "")
+                item.target = self
+                item.representedObject = kind.rawValue
+                menu.addItem(item)
+            }
+            menu.addItem(.separator())
+        }
+        let quitItem = NSMenuItem(title: "Quit whisp", action: #selector(quit), keyEquivalent: "q")
+        quitItem.target = self
+        menu.addItem(quitItem)
+        statusItem.menu = menu
+    }
+
+    @objc private func openSettings(_ sender: NSMenuItem) {
+        if let raw = sender.representedObject as? String, let kind = Permissions.Kind(rawValue: raw) {
+            Permissions.openSettings(for: kind)
         }
     }
 
@@ -154,8 +208,8 @@ final class AppController: NSObject, NSApplicationDelegate {
         }
     }
 
-    private func setIcon(idle: Bool = false, loading: Bool = false, recording: Bool = false, working: Bool = false) {
-        let title = recording ? "🔴" : working ? "⏳" : loading ? "…" : "🎙"
+    private func setIcon(idle: Bool = false, loading: Bool = false, recording: Bool = false, working: Bool = false, blocked: Bool = false) {
+        let title = blocked ? "⚠️" : recording ? "🔴" : working ? "⏳" : loading ? "…" : "🎙"
         statusItem?.button?.title = title
     }
 
@@ -172,10 +226,6 @@ if let wav = options.selftest {
     // entry semantics); runSelftest exits the process when done
     Task.detached { await runSelftest(wavPath: wav, options: options) }
     dispatchMain()
-}
-guard Permissions.ensureAll() else {
-    print("grant the missing permissions to your terminal app, then relaunch")
-    exit(1)
 }
 // top-level code runs on the main thread but isn't statically MainActor-isolated
 MainActor.assumeIsolated {

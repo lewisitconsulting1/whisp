@@ -29,9 +29,15 @@ Hold **right Option** to dictate. See [swift/README.md](swift/README.md) for per
 
 Wispr Flow's cloud pipeline targets 700 ms p99 — whisp matches it offline.
 
+## Install as an app
+
+```bash
+scripts/package-app.sh && cp -R dist/whisp.app /Applications/
+```
+
 ## Roadmap
 
 - [x] Phase 0 — research, benchmarks, Python prototype
-- [x] Phase 1 — native Swift menu-bar app (terminal-run)
-- [ ] Phase 2 — cleanup intensity levels, .app bundle + signing
-- [ ] Phase 3 — personal dictionary, near-cursor context awareness, per-app tone
+- [x] Phase 1 — native Swift menu-bar app
+- [x] Phase 2 — .app bundle + signing, first-launch permission UX, MIT license
+- [ ] Phase 3 — cleanup intensity levels, personal dictionary, near-cursor context awareness, per-app tone

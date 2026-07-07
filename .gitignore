@@ -1,4 +1,5 @@
 .DS_Store
+dist/
 __pycache__/
 bench/.venv/
 bench/models/

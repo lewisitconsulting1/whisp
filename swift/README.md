@@ -39,6 +39,15 @@ Runs STT + cleanup on a WAV and exits — no permissions needed. Measured on thi
 - The ANE doesn't tolerate concurrent inference on one compiled graph — the app-level `busy` flag serializes dictations.
 - The AVAudioConverter input block returns `.noDataNow` after handing over each buffer (returning `.endOfStream` would put a reused converter into a terminal state).
 
-## Not yet done (Phase 2/3)
+## .app bundle (Phase 2)
 
-Cleanup intensity levels beyond light, personal dictionary, near-cursor context awareness, .app bundle packaging + codesigning (currently terminal-run), settings UI.
+```bash
+../scripts/package-app.sh          # builds + assembles + signs dist/whisp.app
+cp -R ../dist/whisp.app /Applications/
+```
+
+Signs with a "Developer ID Application" cert if you have one, else ad-hoc (personal use; ad-hoc TCC grants can reset when the binary changes — re-grant after rebuilds). The bundled app carries the mic entitlements macOS 26+ requires and its own permission UX: on first launch it fires the three system permission prompts, shows ⚠️ in the menu bar with "Open … Settings" shortcuts for anything still missing, and starts automatically once everything is granted. Permissions attach to `com.lewisitconsulting.whisp` itself, not your terminal.
+
+## Not yet done (Phase 3)
+
+Cleanup intensity levels beyond light, personal dictionary (fixes proper-noun spellings and gemma's occasional greeting/hedge-word drops), near-cursor context awareness, settings UI, custom menu-bar icon.
