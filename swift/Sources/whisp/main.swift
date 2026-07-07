@@ -4,18 +4,26 @@ import Foundation
 // MARK: - CLI options
 
 struct Options {
-    var cleanup = true
-    var model = "gemma3:4b"
+    var level: CleanupClient.Level
+    var contextAware: Bool
+    var model: String
     var hotkey: HotkeyMonitor.Key = .altRight
     var selftest: String?
 
     static func parse(_ args: [String]) -> Options {
-        var o = Options()
+        let defaults = UserDefaults.standard
+        var o = Options(
+            level: CleanupClient.Level(rawValue: defaults.string(forKey: "cleanupLevel") ?? "") ?? .light,
+            contextAware: defaults.object(forKey: "contextAwareness") as? Bool ?? true,
+            model: defaults.string(forKey: "model") ?? "gemma3:4b"
+        )
         var it = args.dropFirst().makeIterator()
         while let a = it.next() {
             switch a {
             case "--cleanup":
-                if let v = it.next() { o.cleanup = (v != "off") }
+                if let v = it.next(), let l = CleanupClient.Level(rawValue: v) { o.level = l }
+            case "--context":
+                if let v = it.next() { o.contextAware = (v != "off") }
             case "--model":
                 if let v = it.next() { o.model = v }
             case "--hotkey":
@@ -23,7 +31,7 @@ struct Options {
             case "--selftest":
                 if let v = it.next() { o.selftest = v }
             case "--help", "-h":
-                print("usage: LewisWhisper [--cleanup off|light] [--model gemma3:4b] [--hotkey alt_r|cmd_r|ctrl_r] [--selftest file.wav]")
+                print("usage: LewisWhisper [--cleanup off|light|medium|high] [--context off] [--model gemma3:4b] [--hotkey alt_r|cmd_r|ctrl_r] [--selftest file.wav]")
                 exit(0)
             default:
                 break
@@ -39,12 +47,14 @@ func runSelftest(wavPath: String, options: Options) async {
     do {
         let transcriber = try await Transcriber.load()
         let cleaner = CleanupClient(model: options.model)
-        if options.cleanup { await cleaner.warmUp() }
+        if options.level != .off { await cleaner.warmUp() }
+        let dictionary = PersonalDictionary.terms()
+        if !dictionary.isEmpty { print("dictionary: \(dictionary.joined(separator: ", "))") }
         let t0 = Date()
         let text = try await transcriber.transcribe(fileURL: URL(fileURLWithPath: wavPath))
         let tStt = Date().timeIntervalSince(t0)
         let t1 = Date()
-        let final = options.cleanup ? await cleaner.clean(text) : text
+        let final = await cleaner.clean(text, level: options.level, dictionary: dictionary, context: nil)
         let tLlm = Date().timeIntervalSince(t1)
         print(String(format: "stt %.2fs | llm %.2fs | total %.2fs", tStt, tLlm, Date().timeIntervalSince(t0)))
         print("raw:   \(text)")
@@ -68,9 +78,17 @@ final class AppController: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
     private var permissionTimer: Timer?
     private var busy = false
+    private var level: CleanupClient.Level {
+        didSet { UserDefaults.standard.set(level.rawValue, forKey: "cleanupLevel") }
+    }
+    private var contextAware: Bool {
+        didSet { UserDefaults.standard.set(contextAware, forKey: "contextAwareness") }
+    }
 
     init(options: Options) {
         self.options = options
+        self.level = options.level
+        self.contextAware = options.contextAware
         self.monitor = HotkeyMonitor(key: options.hotkey)
         self.cleaner = CleanupClient(model: options.model)
         super.init()
@@ -114,11 +132,12 @@ final class AppController: NSObject, NSApplicationDelegate {
     private func beginStartup() {
         setIcon(idle: false, loading: true)
         rebuildMenu(blocked: false)
+        PersonalDictionary.ensureExists()
         Task {
             do {
                 let t = try await Transcriber.load()
                 self.transcriber = t
-                if self.options.cleanup {
+                if self.level != .off {
                     print("warming \(self.options.model) via Ollama...")
                     await self.cleaner.warmUp()
                 }
@@ -151,10 +170,49 @@ final class AppController: NSObject, NSApplicationDelegate {
             }
             menu.addItem(.separator())
         }
+
+        let cleanupItem = NSMenuItem(title: "Cleanup", action: nil, keyEquivalent: "")
+        let sub = NSMenu()
+        for lvl in CleanupClient.Level.allCases {
+            let item = NSMenuItem(title: lvl.menuTitle, action: #selector(selectLevel(_:)), keyEquivalent: "")
+            item.target = self
+            item.representedObject = lvl.rawValue
+            item.state = (lvl == level) ? .on : .off
+            sub.addItem(item)
+        }
+        menu.addItem(cleanupItem)
+        menu.setSubmenu(sub, for: cleanupItem)
+
+        let ctxItem = NSMenuItem(title: "Context Awareness", action: #selector(toggleContext), keyEquivalent: "")
+        ctxItem.target = self
+        ctxItem.state = contextAware ? .on : .off
+        menu.addItem(ctxItem)
+
+        let dictItem = NSMenuItem(title: "Edit Personal Dictionary…", action: #selector(editDictionary), keyEquivalent: "")
+        dictItem.target = self
+        menu.addItem(dictItem)
+
+        menu.addItem(.separator())
         let quitItem = NSMenuItem(title: "Quit LewisWhisper", action: #selector(quit), keyEquivalent: "q")
         quitItem.target = self
         menu.addItem(quitItem)
         statusItem.menu = menu
+    }
+
+    @objc private func selectLevel(_ sender: NSMenuItem) {
+        if let raw = sender.representedObject as? String, let lvl = CleanupClient.Level(rawValue: raw) {
+            level = lvl
+            rebuildMenu(blocked: false)
+        }
+    }
+
+    @objc private func toggleContext() {
+        contextAware.toggle()
+        rebuildMenu(blocked: false)
+    }
+
+    @objc private func editDictionary() {
+        PersonalDictionary.openInEditor()
     }
 
     @objc private func openSettings(_ sender: NSMenuItem) {
@@ -186,6 +244,8 @@ final class AppController: NSObject, NSApplicationDelegate {
         guard !busy else { return }
         busy = true
         setIcon(working: true)
+        // capture focus context now, before the paste target could change
+        let context = (contextAware && level != .off) ? ContextReader.capture() : nil
         Task {
             defer {
                 self.busy = false
@@ -198,7 +258,8 @@ final class AppController: NSObject, NSApplicationDelegate {
             }
             let tStt = Date().timeIntervalSince(t0)
             let t1 = Date()
-            let final = self.options.cleanup ? await self.cleaner.clean(text) : text
+            let final = await self.cleaner.clean(
+                text, level: self.level, dictionary: PersonalDictionary.terms(), context: context)
             let tLlm = Date().timeIntervalSince(t1)
             TextInserter.insert(final)
             let total = Date().timeIntervalSince(t0)

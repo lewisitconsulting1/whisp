@@ -48,6 +48,12 @@ cp -R ../dist/LewisWhisper.app /Applications/
 
 Signs with a "Developer ID Application" cert if you have one, else ad-hoc (personal use; ad-hoc TCC grants can reset when the binary changes — re-grant after rebuilds). The bundled app carries the mic entitlements macOS 26+ requires and its own permission UX: on first launch it fires the three system permission prompts, shows ⚠️ in the menu bar with "Open … Settings" shortcuts for anything still missing, and starts automatically once everything is granted. Permissions attach to `com.lewisitconsulting.lewiswhisper` itself, not your terminal.
 
-## Not yet done (Phase 3)
+## Phase 3 features
 
-Cleanup intensity levels beyond light, personal dictionary (fixes proper-noun spellings and gemma's occasional greeting/hedge-word drops), near-cursor context awareness, settings UI.
+- **Cleanup levels** (menu › Cleanup, or `--cleanup off|light|medium|high`): Off = verbatim; Light = fillers + punctuation, nothing else; Medium = light restructuring for clarity; High = rewrite for brevity. Persisted across launches.
+- **Personal dictionary** (menu › Edit Personal Dictionary…): one term per line at `~/Library/Application Support/LewisWhisper/dictionary.txt`; misheard words phonetically matching an entry are replaced with the exact spelling ("PreaWin" → "Priya Nguyen"). Add mishearing hints in parentheses for stubborn cases: `Ollama (often misheard as Alema)`. Reloaded on every dictation — edits apply immediately.
+- **Context awareness** (menu › Context Awareness, on by default): the frontmost app's name and up to 300 chars of the focused field's text (via Accessibility; secure fields excluded) are given to the cleanup model for spelling/tone reference.
+
+## Not yet done
+
+Auto-learned dictionary from corrections, per-app tone presets, settings UI, Whisper engine slot.
