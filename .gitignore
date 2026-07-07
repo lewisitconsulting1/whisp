@@ -6,3 +6,4 @@ bench/models/
 swift/.build/
 *.aiff
 assets/AppIcon.iconset/
+*.zip
