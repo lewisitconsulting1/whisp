@@ -62,8 +62,33 @@ struct SettingsView: View {
     @State private var installedModels: [String] = []
     @State private var ollamaReachable = true
 
+    /// Lewis IT logo from the bundle; black-on-transparent, rendered as a
+    /// template so it adapts to light/dark. Absent when running unbundled.
+    private static let logo: NSImage? = {
+        guard let url = Bundle.main.url(forResource: "lewis-it-logo", withExtension: "png") else { return nil }
+        return NSImage(contentsOf: url)
+    }()
+
     var body: some View {
         Form {
+            Section {
+                VStack(spacing: 6) {
+                    if let logo = Self.logo {
+                        Image(nsImage: logo)
+                            .resizable()
+                            .renderingMode(.template)
+                            .aspectRatio(contentMode: .fit)
+                            .frame(height: 52)
+                            .foregroundStyle(.primary)
+                    }
+                    Text("Created by Chadwick Lewis · Lewis IT Consulting")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 4)
+            }
+
             Section("Dictation") {
                 Picker("Hotkey", selection: $settings.hotkey) {
                     ForEach(HotkeyMonitor.Key.allCases, id: \.self) { key in

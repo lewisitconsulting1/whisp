@@ -18,6 +18,7 @@ cp -X swift/.build/release/LewisWhisper "$APP/Contents/MacOS/LewisWhisper"
 cp -X swift/Info.plist "$APP/Contents/Info.plist"
 cp -X assets/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
 cp -X assets/MenuBarIcon.png "$APP/Contents/Resources/MenuBarIcon.png"
+cp -X assets/lewis-it-logo.png "$APP/Contents/Resources/lewis-it-logo.png"
 # strip Finder info/resource-fork xattrs — codesign rejects them ("detritus")
 xattr -cr "$APP"
 
