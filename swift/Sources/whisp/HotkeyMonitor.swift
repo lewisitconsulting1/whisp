@@ -4,10 +4,18 @@ import Foundation
 /// Watches a modifier key (default: right Option) via a listen-only CGEvent tap.
 /// Calls onPress when the key goes down and onRelease when it comes back up.
 final class HotkeyMonitor {
-    enum Key: String {
+    enum Key: String, CaseIterable {
         case altRight = "alt_r"
         case cmdRight = "cmd_r"
         case ctrlRight = "ctrl_r"
+
+        var displayName: String {
+            switch self {
+            case .altRight: return "Right Option (⌥)"
+            case .cmdRight: return "Right Command (⌘)"
+            case .ctrlRight: return "Right Control (⌃)"
+            }
+        }
 
         var keyCode: Int64 {
             switch self {
@@ -26,7 +34,7 @@ final class HotkeyMonitor {
         }
     }
 
-    let key: Key
+    private(set) var key: Key
     var onPress: () -> Void = {}
     var onRelease: () -> Void = {}
 
@@ -35,6 +43,13 @@ final class HotkeyMonitor {
 
     init(key: Key) {
         self.key = key
+    }
+
+    /// The tap already receives every flagsChanged event and filters by
+    /// keycode, so switching keys is just a field swap — no tap teardown.
+    func setKey(_ newKey: Key) {
+        key = newKey
+        pressed = false
     }
 
     func start() -> Bool {

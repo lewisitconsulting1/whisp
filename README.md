@@ -43,4 +43,5 @@ scripts/package-app.sh && cp -R dist/LewisWhisper.app /Applications/
 - [x] Phase 3 — cleanup intensity levels (Off/Light/Medium/High), personal dictionary, context awareness
 - [x] Phase 4 — hands-free tap-to-record with silence auto-stop
 - [x] Phase 5 — auto-learned dictionary, per-app tone presets
-- [ ] Phase 6 — settings UI, Whisper engine slot
+- [x] Phase 6 — settings window (hotkey/model pickers, silence delay), sound feedback
+- [ ] Later — Whisper engine slot (accuracy-first alternative)

@@ -78,39 +78,23 @@ func runSelftest(wavPath: String, options: Options) async {
 
 @MainActor
 final class AppController: NSObject, NSApplicationDelegate {
-    private let options: Options
+    private let settings: AppSettings
     private let recorder = AudioRecorder()
     private let monitor: HotkeyMonitor
-    private let cleaner: CleanupClient
+    private var cleaner: CleanupClient
     private var transcriber: Transcriber?
     private var statusItem: NSStatusItem!
     private var permissionTimer: Timer?
     private var busy = false
-    private var level: CleanupClient.Level {
-        didSet { UserDefaults.standard.set(level.rawValue, forKey: "cleanupLevel") }
-    }
-    private var contextAware: Bool {
-        didSet { UserDefaults.standard.set(contextAware, forKey: "contextAwareness") }
-    }
-    private var autoStop: Bool {
-        didSet { UserDefaults.standard.set(autoStop, forKey: "autoStopSilence") }
-    }
-    private var learnWords: Bool {
-        didSet { UserDefaults.standard.set(learnWords, forKey: "learnWords") }
-    }
     // capture state: hold = walkie-talkie, quick tap = hands-free until the
-    // next tap or ~1.2s of post-speech silence
+    // next tap or configurable post-speech silence
     private var capturing = false
     private var handsFree = false
     private var pressedAt: Date?
     private var silenceTimer: Timer?
 
     init(options: Options) {
-        self.options = options
-        self.level = options.level
-        self.contextAware = options.contextAware
-        self.autoStop = UserDefaults.standard.object(forKey: "autoStopSilence") as? Bool ?? true
-        self.learnWords = UserDefaults.standard.object(forKey: "learnWords") as? Bool ?? true
+        self.settings = AppSettings(options: options)
         self.monitor = HotkeyMonitor(key: options.hotkey)
         self.cleaner = CleanupClient(model: options.model)
         super.init()
@@ -120,12 +104,28 @@ final class AppController: NSObject, NSApplicationDelegate {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         monitor.onPress = { [weak self] in self?.startDictation() }
         monitor.onRelease = { [weak self] in self?.finishDictation() }
+        settings.onChange = { [weak self] in self?.applySettings() }
 
         if Permissions.missing.isEmpty {
             beginStartup()
         } else {
             enterPermissionBlockedState()
         }
+    }
+
+    /// Re-apply mutable settings after any change (from menu or Settings
+    /// window). Idempotent — cheap to call for every mutation.
+    private func applySettings() {
+        if monitor.key != settings.hotkey {
+            monitor.setKey(settings.hotkey)
+            print("hotkey → \(settings.hotkey.displayName)")
+        }
+        if cleaner.model != settings.model {
+            cleaner = CleanupClient(model: settings.model)
+            print("cleanup model → \(settings.model)")
+            Task { await self.cleaner.warmUp() }
+        }
+        rebuildMenu(blocked: !Permissions.missing.isEmpty)
     }
 
     /// Bundled app launched from Finder has no terminal to read instructions
@@ -159,8 +159,8 @@ final class AppController: NSObject, NSApplicationDelegate {
             do {
                 let t = try await Transcriber.load()
                 self.transcriber = t
-                if self.level != .off {
-                    print("warming \(self.options.model) via Ollama...")
+                if self.settings.level != .off {
+                    print("warming \(self.settings.model) via Ollama...")
                     await self.cleaner.warmUp()
                 }
                 guard self.monitor.start() else {
@@ -169,8 +169,7 @@ final class AppController: NSObject, NSApplicationDelegate {
                     return
                 }
                 self.setIcon(idle: true, loading: false)
-                let keyName = self.options.hotkey.rawValue.split(separator: "_").first.map(String.init) ?? "alt"
-                print("ready — hold RIGHT \(keyName.uppercased()) to dictate, release to insert")
+                print("ready — hold \(self.settings.hotkey.displayName) to dictate, quick-tap for hands-free")
             } catch {
                 print("✗ failed to load speech model: \(error)")
                 NSApp.terminate(nil)
@@ -199,7 +198,7 @@ final class AppController: NSObject, NSApplicationDelegate {
             let item = NSMenuItem(title: lvl.menuTitle, action: #selector(selectLevel(_:)), keyEquivalent: "")
             item.target = self
             item.representedObject = lvl.rawValue
-            item.state = (lvl == level) ? .on : .off
+            item.state = (lvl == settings.level) ? .on : .off
             sub.addItem(item)
         }
         menu.addItem(cleanupItem)
@@ -207,26 +206,17 @@ final class AppController: NSObject, NSApplicationDelegate {
 
         let ctxItem = NSMenuItem(title: "Context Awareness", action: #selector(toggleContext), keyEquivalent: "")
         ctxItem.target = self
-        ctxItem.state = contextAware ? .on : .off
+        ctxItem.state = settings.contextAware ? .on : .off
         menu.addItem(ctxItem)
-
-        let autoItem = NSMenuItem(title: "Auto-stop on Silence", action: #selector(toggleAutoStop), keyEquivalent: "")
-        autoItem.target = self
-        autoItem.state = autoStop ? .on : .off
-        menu.addItem(autoItem)
 
         let learnItem = NSMenuItem(title: "Learn New Words", action: #selector(toggleLearnWords), keyEquivalent: "")
         learnItem.target = self
-        learnItem.state = learnWords ? .on : .off
+        learnItem.state = settings.learnWords ? .on : .off
         menu.addItem(learnItem)
 
-        let dictItem = NSMenuItem(title: "Edit Personal Dictionary…", action: #selector(editDictionary), keyEquivalent: "")
-        dictItem.target = self
-        menu.addItem(dictItem)
-
-        let tonesItem = NSMenuItem(title: "Edit App Tones…", action: #selector(editTones), keyEquivalent: "")
-        tonesItem.target = self
-        menu.addItem(tonesItem)
+        let settingsItem = NSMenuItem(title: "Settings…", action: #selector(showSettingsWindow), keyEquivalent: ",")
+        settingsItem.target = self
+        menu.addItem(settingsItem)
 
         menu.addItem(.separator())
         let aboutItem = NSMenuItem(title: "About LewisWhisper", action: #selector(showAbout), keyEquivalent: "")
@@ -238,34 +228,23 @@ final class AppController: NSObject, NSApplicationDelegate {
         statusItem.menu = menu
     }
 
+    // menu actions mutate settings; settings.onChange re-applies + rebuilds
     @objc private func selectLevel(_ sender: NSMenuItem) {
         if let raw = sender.representedObject as? String, let lvl = CleanupClient.Level(rawValue: raw) {
-            level = lvl
-            rebuildMenu(blocked: false)
+            settings.level = lvl
         }
     }
 
     @objc private func toggleContext() {
-        contextAware.toggle()
-        rebuildMenu(blocked: false)
-    }
-
-    @objc private func toggleAutoStop() {
-        autoStop.toggle()
-        rebuildMenu(blocked: false)
+        settings.contextAware.toggle()
     }
 
     @objc private func toggleLearnWords() {
-        learnWords.toggle()
-        rebuildMenu(blocked: false)
+        settings.learnWords.toggle()
     }
 
-    @objc private func editDictionary() {
-        PersonalDictionary.openInEditor()
-    }
-
-    @objc private func editTones() {
-        AppTones.openInEditor()
+    @objc private func showSettingsWindow() {
+        SettingsWindow.show(settings: settings)
     }
 
     @objc private func showAbout() {
@@ -296,10 +275,17 @@ final class AppController: NSObject, NSApplicationDelegate {
             capturing = true
             pressedAt = Date()
             setIcon(recording: true)
+            playFeedback("Tink")
             print("\n● recording...")
         } catch {
             print("✗ mic start failed: \(error)")
         }
+    }
+
+    private func playFeedback(_ name: String) {
+        guard settings.soundFeedback, let sound = NSSound(named: name) else { return }
+        sound.volume = 0.3
+        sound.play()
     }
 
     private func finishDictation() {
@@ -321,17 +307,18 @@ final class AppController: NSObject, NSApplicationDelegate {
         handsFree = false
         guard capturing else { return }
         capturing = false
+        playFeedback("Pop")
         process(recorder.stop())
     }
 
     private func startSilenceWatch() {
-        guard autoStop else { return }
+        guard settings.autoStop else { return }
         silenceTimer = Timer.scheduledTimer(withTimeInterval: 0.25, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated {
                 guard let self, self.handsFree, self.capturing else { return }
                 let v = self.recorder.voiceStatus()
-                // stop after 1.2s of silence once speech was heard; 3 min hard cap
-                if (v.heardVoice && v.silenceSeconds > 1.2) || v.duration > 180 {
+                // stop after the configured post-speech silence; 3 min hard cap
+                if (v.heardVoice && v.silenceSeconds > self.settings.silenceDelay) || v.duration > 180 {
                     self.stopCapture()
                 }
             }
@@ -349,7 +336,7 @@ final class AppController: NSObject, NSApplicationDelegate {
         busy = true
         setIcon(working: true)
         // capture focus context now, before the paste target could change
-        let context = (contextAware && level != .off) ? ContextReader.capture() : nil
+        let context = (settings.contextAware && settings.level != .off) ? ContextReader.capture() : nil
         Task {
             defer {
                 self.busy = false
@@ -363,14 +350,14 @@ final class AppController: NSObject, NSApplicationDelegate {
             let tStt = Date().timeIntervalSince(t0)
             let t1 = Date()
             let final = await self.cleaner.clean(
-                text, level: self.level, dictionary: PersonalDictionary.terms(), context: context)
+                text, level: self.settings.level, dictionary: PersonalDictionary.terms(), context: context)
             let tLlm = Date().timeIntervalSince(t1)
             TextInserter.insert(final)
             let total = Date().timeIntervalSince(t0)
             print(String(format: "  %.1fs audio | stt %.2fs | llm %.2fs | total %.2fs", duration, tStt, tLlm, total))
             print("  raw:   \(text)")
             if final != text { print("  clean: \(final)") }
-            if self.learnWords {
+            if self.settings.learnWords {
                 let learned = WordLearner.observe(final)
                 if !learned.isEmpty {
                     print("  learned: \(learned.joined(separator: ", ")) → personal dictionary")

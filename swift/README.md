@@ -59,6 +59,11 @@ Signs with a "Developer ID Application" cert if you have one, else ad-hoc (perso
 - **Auto-learned dictionary** (menu › Learn New Words, on by default): proper nouns and acronyms spotted in your cleaned transcripts (capitalized mid-sentence words, name pairs, mixed-case identifiers) are counted, and after 3 sightings appended to the personal dictionary automatically. Sighting counts live in `learned_counts.json` next to the dictionary. Debug: `LewisWhisper --learn "some text"` prints candidates and promotions.
 - **Per-app tones** (menu › Edit App Tones…): `app_tones.txt` maps app name → register ("Notes: terse bullet-point style"); built-in defaults make Messages/Slack/Discord/WhatsApp casual and Mail/Outlook/Word/Pages professional. Applied only when Context Awareness is on.
 
+## Phase 6 features
+
+- **Settings window** (menu › Settings…, ⌘,): hotkey picker (right Option/Command/Control — switches live, no restart), cleanup level, cleanup-model picker populated from Ollama's `/api/tags` (free-text fallback when Ollama is down), hands-free silence-delay slider (0.5–3 s), sound-feedback toggle, and buttons for the dictionary/tones files. All settings live in a UserDefaults-backed `AppSettings` observable shared by the menu and the window — mutating either updates both.
+- **Sound feedback** (on by default): subtle system tick on record start ("Tink") and stop ("Pop") at low volume.
+
 ## Not yet done
 
-Settings UI, Whisper engine slot.
+Whisper engine slot (accuracy-first alternative to Parakeet).
