@@ -8,8 +8,11 @@ cd "$(dirname "$0")/.."
 echo "building release..."
 swift build -c release --package-path swift
 
-APP="dist/LewisWhisper.app"
-rm -rf dist
+# assemble + sign in /tmp: ~/Documents is iCloud-synced, and File Provider
+# tags bundle files between cp and codesign, which codesign rejects as detritus
+STAGE=$(mktemp -d /tmp/lewiswhisper-pkg.XXXXXX)
+trap 'rm -rf "$STAGE"' EXIT
+APP="$STAGE/LewisWhisper.app"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp -X swift/.build/release/LewisWhisper "$APP/Contents/MacOS/LewisWhisper"
 cp -X swift/Info.plist "$APP/Contents/Info.plist"
@@ -52,5 +55,9 @@ xattr -cr "$APP"
 codesign --verify --deep --strict "$APP"
 echo "--- embedded entitlements ---"
 codesign -d --entitlements - "$APP" 2>/dev/null
+
+rm -rf dist/LewisWhisper.app
+mkdir -p dist
+mv "$APP" dist/LewisWhisper.app
 echo
-echo "done: $APP  (install: cp -R $APP /Applications/)"
+echo "done: dist/LewisWhisper.app  (install: cp -R dist/LewisWhisper.app /Applications/)"
