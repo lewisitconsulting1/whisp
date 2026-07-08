@@ -18,11 +18,29 @@ cp -X assets/MenuBarIcon.png "$APP/Contents/Resources/MenuBarIcon.png"
 # strip Finder info/resource-fork xattrs — codesign rejects them ("detritus")
 xattr -cr "$APP"
 
+NOTARY_PROFILE="lewiswhisper-notary"
 CERT=$(security find-identity -v -p codesigning 2>/dev/null | awk -F'"' '/Developer ID Application:/ {print $2; exit}' || true)
 if [ -n "${CERT:-}" ]; then
     echo "signing with: $CERT"
     codesign --force --deep --sign "$CERT" --options runtime \
         --entitlements swift/entitlements.plist --timestamp "$APP"
+
+    # notarize + staple if credentials are stored
+    # (one-time setup: xcrun notarytool store-credentials lewiswhisper-notary \
+    #    --apple-id <apple-id-email> --team-id WFJF94UR9E --password <app-specific-password>)
+    if xcrun notarytool history --keychain-profile "$NOTARY_PROFILE" >/dev/null 2>&1; then
+        echo "notarizing (Apple usually takes 1-5 minutes)..."
+        NOTARY_TMP=$(mktemp -d)
+        ditto -c -k --keepParent "$APP" "$NOTARY_TMP/LewisWhisper.zip"
+        xcrun notarytool submit "$NOTARY_TMP/LewisWhisper.zip" \
+            --keychain-profile "$NOTARY_PROFILE" --wait
+        rm -rf "$NOTARY_TMP"
+        xcrun stapler staple "$APP"
+        xcrun stapler validate "$APP"
+        echo "notarized + stapled — opens on any Mac with no warnings"
+    else
+        echo "notarization skipped — no '$NOTARY_PROFILE' keychain profile"
+    fi
 else
     echo "no Developer ID cert found — ad-hoc signing"
     codesign --force --deep --sign - --entitlements swift/entitlements.plist "$APP"
