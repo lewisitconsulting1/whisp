@@ -30,6 +30,13 @@ struct Options {
                 if let v = it.next(), let k = HotkeyMonitor.Key(rawValue: v) { o.hotkey = k }
             case "--selftest":
                 if let v = it.next() { o.selftest = v }
+            case "--learn":  // debug: run WordLearner.observe on a string and exit
+                if let v = it.next() {
+                    let promoted = WordLearner.observe(v)
+                    print("candidates: \(WordLearner.extractCandidates(from: v).joined(separator: ", "))")
+                    print("promoted:   \(promoted.joined(separator: ", "))")
+                    exit(0)
+                }
             case "--help", "-h":
                 print("usage: LewisWhisper [--cleanup off|light|medium|high] [--context off] [--model gemma3:4b] [--hotkey alt_r|cmd_r|ctrl_r] [--selftest file.wav]")
                 exit(0)
@@ -59,6 +66,7 @@ func runSelftest(wavPath: String, options: Options) async {
         print(String(format: "stt %.2fs | llm %.2fs | total %.2fs", tStt, tLlm, Date().timeIntervalSince(t0)))
         print("raw:   \(text)")
         if final != text { print("clean: \(final)") }
+        print("learn candidates: \(WordLearner.extractCandidates(from: final).joined(separator: ", "))")
         exit(0)
     } catch {
         print("selftest failed: \(error)")
@@ -87,6 +95,9 @@ final class AppController: NSObject, NSApplicationDelegate {
     private var autoStop: Bool {
         didSet { UserDefaults.standard.set(autoStop, forKey: "autoStopSilence") }
     }
+    private var learnWords: Bool {
+        didSet { UserDefaults.standard.set(learnWords, forKey: "learnWords") }
+    }
     // capture state: hold = walkie-talkie, quick tap = hands-free until the
     // next tap or ~1.2s of post-speech silence
     private var capturing = false
@@ -99,6 +110,7 @@ final class AppController: NSObject, NSApplicationDelegate {
         self.level = options.level
         self.contextAware = options.contextAware
         self.autoStop = UserDefaults.standard.object(forKey: "autoStopSilence") as? Bool ?? true
+        self.learnWords = UserDefaults.standard.object(forKey: "learnWords") as? Bool ?? true
         self.monitor = HotkeyMonitor(key: options.hotkey)
         self.cleaner = CleanupClient(model: options.model)
         super.init()
@@ -203,9 +215,18 @@ final class AppController: NSObject, NSApplicationDelegate {
         autoItem.state = autoStop ? .on : .off
         menu.addItem(autoItem)
 
+        let learnItem = NSMenuItem(title: "Learn New Words", action: #selector(toggleLearnWords), keyEquivalent: "")
+        learnItem.target = self
+        learnItem.state = learnWords ? .on : .off
+        menu.addItem(learnItem)
+
         let dictItem = NSMenuItem(title: "Edit Personal Dictionary…", action: #selector(editDictionary), keyEquivalent: "")
         dictItem.target = self
         menu.addItem(dictItem)
+
+        let tonesItem = NSMenuItem(title: "Edit App Tones…", action: #selector(editTones), keyEquivalent: "")
+        tonesItem.target = self
+        menu.addItem(tonesItem)
 
         menu.addItem(.separator())
         let aboutItem = NSMenuItem(title: "About LewisWhisper", action: #selector(showAbout), keyEquivalent: "")
@@ -234,8 +255,17 @@ final class AppController: NSObject, NSApplicationDelegate {
         rebuildMenu(blocked: false)
     }
 
+    @objc private func toggleLearnWords() {
+        learnWords.toggle()
+        rebuildMenu(blocked: false)
+    }
+
     @objc private func editDictionary() {
         PersonalDictionary.openInEditor()
+    }
+
+    @objc private func editTones() {
+        AppTones.openInEditor()
     }
 
     @objc private func showAbout() {
@@ -340,6 +370,12 @@ final class AppController: NSObject, NSApplicationDelegate {
             print(String(format: "  %.1fs audio | stt %.2fs | llm %.2fs | total %.2fs", duration, tStt, tLlm, total))
             print("  raw:   \(text)")
             if final != text { print("  clean: \(final)") }
+            if self.learnWords {
+                let learned = WordLearner.observe(final)
+                if !learned.isEmpty {
+                    print("  learned: \(learned.joined(separator: ", ")) → personal dictionary")
+                }
+            }
         }
     }
 

@@ -54,6 +54,11 @@ Signs with a "Developer ID Application" cert if you have one, else ad-hoc (perso
 - **Personal dictionary** (menu › Edit Personal Dictionary…): one term per line at `~/Library/Application Support/LewisWhisper/dictionary.txt`; misheard words phonetically matching an entry are replaced with the exact spelling ("PreaWin" → "Priya Nguyen"). Add mishearing hints in parentheses for stubborn cases: `Ollama (often misheard as Alema)`. Reloaded on every dictation — edits apply immediately.
 - **Context awareness** (menu › Context Awareness, on by default): the frontmost app's name and up to 300 chars of the focused field's text (via Accessibility; secure fields excluded) are given to the cleanup model for spelling/tone reference.
 
+## Phase 5 features
+
+- **Auto-learned dictionary** (menu › Learn New Words, on by default): proper nouns and acronyms spotted in your cleaned transcripts (capitalized mid-sentence words, name pairs, mixed-case identifiers) are counted, and after 3 sightings appended to the personal dictionary automatically. Sighting counts live in `learned_counts.json` next to the dictionary. Debug: `LewisWhisper --learn "some text"` prints candidates and promotions.
+- **Per-app tones** (menu › Edit App Tones…): `app_tones.txt` maps app name → register ("Notes: terse bullet-point style"); built-in defaults make Messages/Slack/Discord/WhatsApp casual and Mail/Outlook/Word/Pages professional. Applied only when Context Awareness is on.
+
 ## Not yet done
 
-Auto-learned dictionary from corrections, per-app tone presets, settings UI, Whisper engine slot.
+Settings UI, Whisper engine slot.

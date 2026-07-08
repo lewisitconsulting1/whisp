@@ -42,4 +42,5 @@ scripts/package-app.sh && cp -R dist/LewisWhisper.app /Applications/
 - [x] Phase 2 — .app bundle + signing, first-launch permission UX, MIT license
 - [x] Phase 3 — cleanup intensity levels (Off/Light/Medium/High), personal dictionary, context awareness
 - [x] Phase 4 — hands-free tap-to-record with silence auto-stop
-- [ ] Phase 5 — auto-learned dictionary, per-app tone presets, settings UI
+- [x] Phase 5 — auto-learned dictionary, per-app tone presets
+- [ ] Phase 6 — settings UI, Whisper engine slot

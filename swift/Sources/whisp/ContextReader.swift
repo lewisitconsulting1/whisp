@@ -4,6 +4,7 @@ import ApplicationServices
 struct AppContext {
     let appName: String
     let nearText: String?
+    let tone: String?
 }
 
 /// Best-effort read of the frontmost app and the focused text field's content
@@ -36,6 +37,6 @@ enum ContextReader {
                 }
             }
         }
-        return AppContext(appName: name, nearText: nearText)
+        return AppContext(appName: name, nearText: nearText, tone: AppTones.tone(for: name))
     }
 }
