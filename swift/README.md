@@ -64,6 +64,14 @@ Signs with a "Developer ID Application" cert if you have one, else ad-hoc (perso
 - **Settings window** (menu › Settings…, ⌘,): hotkey picker (right Option/Command/Control — switches live, no restart), cleanup level, cleanup-model picker populated from Ollama's `/api/tags` (free-text fallback when Ollama is down), hands-free silence-delay slider (0.5–3 s), sound-feedback toggle, and buttons for the dictionary/tones files. All settings live in a UserDefaults-backed `AppSettings` observable shared by the menu and the window — mutating either updates both.
 - **Sound feedback** (on by default): subtle system tick on record start ("Tink") and stop ("Pop") at low volume.
 
+## Phase 7 features — pluggable cleanup backends
+
+- **Provider picker** (Settings › Cleanup AI): Local Ollama (default, free) · Remote Ollama server · LM Studio server · OpenAI · Anthropic · OpenRouter · Perplexity · Kimi (Moonshot) · Custom (OpenAI-compatible). Three request dialects under the hood (Ollama-native, OpenAI-compatible, Anthropic `/v1/messages`), all unit-tested; per-provider URL/model remembered across switches.
+- **Client-office pattern:** run Ollama on one machine (e.g. a Mac mini), point every client's LewisWhisper at `http://mac-mini.local:11434` via "Remote Ollama server" — no per-seat model downloads.
+- **API keys live in the macOS Keychain**, never UserDefaults. Cloud dialects never warm up (no idle token spend), get a 10 s timeout (6 s self-hosted), and the failure rule is unchanged: any error pastes the raw transcript.
+- **Test button** round-trips the configured provider and reports latency or the exact error — bad keys/URLs surface in Settings, not as mystery raw-pastes.
+- Privacy: cloud providers receive transcript **text** only; audio and speech-to-text never leave the Mac (caption shown in Settings when a cloud provider is selected).
+
 ## Not yet done
 
 Whisper engine slot (accuracy-first alternative to Parakeet).

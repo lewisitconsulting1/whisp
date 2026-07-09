@@ -44,4 +44,5 @@ scripts/package-app.sh && cp -R dist/LewisWhisper.app /Applications/
 - [x] Phase 4 — hands-free tap-to-record with silence auto-stop
 - [x] Phase 5 — auto-learned dictionary, per-app tone presets
 - [x] Phase 6 — settings window (hotkey/model pickers, silence delay), sound feedback
+- [x] Phase 7 — pluggable cleanup backends: remote Ollama/LM Studio servers + cloud APIs (OpenAI, Anthropic, OpenRouter, Perplexity, Kimi), Keychain-stored keys
 - [ ] Later — Whisper engine slot (accuracy-first alternative)

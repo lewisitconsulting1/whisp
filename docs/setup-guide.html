@@ -76,7 +76,7 @@
   <tr><td><b>Cleanup</b></td><td>How much the AI tidies your speech. <b>Off</b> = your exact words. <b>Light</b> = removes "um"s, fixes punctuation (recommended). <b>Medium</b> = also smooths clumsy sentences. <b>High</b> = rewrites for brevity.</td></tr>
   <tr><td><b>Context Awareness</b></td><td>Lets the cleanup AI see which app you're in (and nearby text) so tone and spelling fit. Passwords are never read.</td></tr>
   <tr><td><b>Learn New Words</b></td><td>Names and jargon that keep appearing in your dictations get added to the dictionary automatically after a few sightings — accuracy improves the more you use it.</td></tr>
-  <tr><td><b>Settings…</b></td><td>The full settings window: change the <b>hotkey</b> (right Option/Command/Control), pick the <b>cleanup AI model</b> from what's installed in Ollama, tune the hands-free <b>silence delay</b>, toggle <b>sound feedback</b>, and open the two customization files below.</td></tr>
+  <tr><td><b>Settings…</b></td><td>The full settings window: change the <b>hotkey</b> (right Option/Command/Control), pick your <b>cleanup AI provider</b> — your own Ollama or LM Studio server (free, including one on another machine like an office Mac mini) or a cloud API (OpenAI, Anthropic, OpenRouter, Perplexity, Kimi) with your API key — plus the model, hands-free <b>silence delay</b>, <b>sound feedback</b>, and the two customization files below. The <b>Test</b> button checks your provider connection instantly.</td></tr>
   <tr><td><b>Personal Dictionary</b> <i>(in Settings)</i></td><td>A text file of names and jargon it should always spell right — one per line. For stubborn words, add a hint: <code>Ollama (often misheard as Alema)</code>. Changes apply instantly.</td></tr>
   <tr><td><b>App Tones</b> <i>(in Settings)</i></td><td>Tell the cleanup AI what register fits each app — out of the box, Messages/Slack read casual and Mail/Word read professional. Add your own like <code>Notes: terse bullet-point style</code>.</td></tr>
   <tr><td><b>About LewisWhisper</b></td><td>Version and credits.</td></tr>
@@ -97,9 +97,10 @@
 <hr>
 
 <h2>Privacy</h2>
+<p>If you choose a <b>cloud cleanup provider</b> in Settings, the transcript text (never audio) is sent to that provider. The default — Local Ollama — keeps everything on this Mac.</p>
 <p>Your audio is processed entirely on this Mac: speech recognition runs on the Apple Neural Engine, and text cleanup runs in Ollama locally. Nothing is uploaded, logged, or shared. The app needs internet exactly once — to download its AI models during setup.</p>
 
-<div class="footer">LewisWhisper 0.6.1 &middot; Created by Chadwick Lewis &middot; Lewis IT Consulting &middot; MIT licensed &middot; github.com/lewisitconsulting1/whisp</div>
+<div class="footer">LewisWhisper 0.7.0 &middot; Created by Chadwick Lewis &middot; Lewis IT Consulting &middot; MIT licensed &middot; github.com/lewisitconsulting1/whisp</div>
 
 </body>
 </html>
