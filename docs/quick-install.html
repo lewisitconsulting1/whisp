@@ -91,9 +91,9 @@
 <div class="step">
   <div class="num">2</div>
   <div>
-    <h2>Run the installer</h2>
-    <p>Unzip, then <b>right-click</b> <code>setup.command</code> &rarr; <b>Open</b> &rarr; <b>Open</b>.</p>
-    <p class="dim">It installs the app, opens the Ollama download if needed, and pulls the cleanup model (<code>gemma3:4b</code>, ~3.3&nbsp;GB, one time). Prefer manual? Drag <code>LewisWhisper.app</code> to Applications — it's notarized, it just opens.</p>
+    <h2>Install the app</h2>
+    <p>Unzip, then drag <b><code>LewisWhisper.app</code></b> into <b>Applications</b> and open it. It's notarized — it opens with no warning.</p>
+    <p class="dim">For cleanup, install <a href="https://ollama.com">Ollama</a> and run <code>ollama pull gemma3:4b</code> — or skip that and use a server/API key (step below). The <code>setup.command</code> helper automates the Ollama part but modern macOS blocks double-clicking scripts; run it from Terminal with <code>bash &lt;drag file in&gt;</code> if you want it.</p>
   </div>
 </div>
 

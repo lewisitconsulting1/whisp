@@ -1,6 +1,10 @@
 #!/bin/bash
-# LewisWhisper setup helper — double-click to run.
-# (If macOS blocks this script: right-click it > Open > Open.)
+# LewisWhisper setup helper (OPTIONAL — installs Ollama + the cleanup model).
+# The app itself is notarized and opens fine by dragging it to Applications;
+# you only need this script for the Ollama convenience.
+# Modern macOS blocks double-clicking unsigned scripts. To run it, open
+# Terminal and type:  bash <drag this file in>   — or install Ollama yourself
+# from ollama.com and run:  ollama pull gemma3:4b
 set -e
 cd "$(dirname "$0")"
 echo "== LewisWhisper setup =="

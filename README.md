@@ -42,12 +42,13 @@
 
 ## Install
 
-**[Download the latest release](https://github.com/lewisitconsulting1/whisp/releases/latest)**, unzip, then either:
+**[Download the latest release](https://github.com/lewisitconsulting1/whisp/releases/latest)**, unzip, then:
 
-- double-click **`setup.command`** (installs the app + Ollama + the cleanup model and walks you through permissions), or
-- drag **`LewisWhisper.app`** to Applications — it's notarized, it just opens. Install [Ollama](https://ollama.com) and run `ollama pull gemma3:4b` for the default local cleanup.
+1. Drag **`LewisWhisper.app`** to Applications and open it — the app is **notarized**, so it opens with no Gatekeeper warning.
+2. For the default local cleanup, install [Ollama](https://ollama.com) and run `ollama pull gemma3:4b`. *Or* skip that and point the app at a server/cloud key in Settings → Cleanup AI.
+3. Grant the three permissions the ⚠️ menu icon asks for (Microphone, Input Monitoring, Accessibility), quit & reopen once, and let the first launch fetch the speech models (~2.5 GB, one time).
 
-Grant the three permissions the ⚠️ menu icon asks for (Microphone, Input Monitoring, Accessibility), quit & reopen once, and let the first launch fetch the speech models (~2.5 GB, one time). Full walkthrough: the bundled **Setup Guide PDF** or the one-page [Quick Install](docs/quick-install.html).
+> The bundled `setup.command` automates the Ollama step, but **modern macOS blocks double-clicking unsigned scripts** (a shell script can't be notarized — only the app can). Run it from Terminal with `bash <path-to-setup.command>` if you want it, or just do step 2 yourself. Full walkthrough: the bundled **Setup Guide PDF** or the one-page [Quick Install](docs/quick-install.html).
 
 > **Requirements:** Apple Silicon (M1 or newer), macOS 14+, ~6 GB disk for models. Internet needed for setup only.
 

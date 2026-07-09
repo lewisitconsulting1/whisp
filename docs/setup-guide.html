@@ -40,11 +40,11 @@
   <li>Internet connection <b>for setup only</b> (model downloads); after that it works fully offline</li>
 </ul>
 
-<h2>Install (the easy way)</h2>
+<h2>Install</h2>
 <ol>
   <li>Unzip the folder you received.</li>
-  <li>Double-click <code>setup.command</code>. If macOS says it can't verify the developer: <b>right-click → Open → Open</b>.</li>
-  <li>Follow the prompts. The script installs the app, installs/starts <b>Ollama</b> (the free program that runs the cleanup AI), and downloads the AI model (~3.3 GB, one time).</li>
+  <li>Drag <b>LewisWhisper.app</b> into your <b>Applications</b> folder, then double-click it. The app is <b>notarized by Apple</b>, so it opens without any warning.</li>
+  <li>Install the cleanup AI. Either install <b>Ollama</b> from <b>ollama.com/download</b>, open it once, and run in Terminal <code>ollama pull gemma3:4b</code> — <i>or</i> skip this entirely and point the app at a server you already have (see "Use a server or cloud key" below).</li>
   <li>When LewisWhisper launches, a <b>⚠️ icon</b> appears in the menu bar (top-right of your screen, near the clock). Grant the three permissions it asks for:
     <ul>
       <li><b>Microphone</b> — click <i>Allow</i> on the popup</li>
@@ -56,13 +56,7 @@
   <li>First launch downloads the speech-recognition models (~2.5 GB). The icon shows <b>…</b> while loading — give it a few minutes the first time. When you see the <b>soundwave icon</b>, you're ready.</li>
 </ol>
 
-<h2>Install (manual, if you prefer)</h2>
-<ol>
-  <li>Drag <b>LewisWhisper.app</b> into your <b>Applications</b> folder.</li>
-  <li>Open <b>Terminal</b> and run: <code>xattr -cr /Applications/LewisWhisper.app</code> (clears the "unverified developer" block).</li>
-  <li>Install Ollama from <b>ollama.com/download</b>, open it once, then run in Terminal: <code>ollama pull gemma3:4b</code></li>
-  <li>Open LewisWhisper and continue from step 4 above.</li>
-</ol>
+<p><b>Optional — the <code>setup.command</code> helper</b> does step 3 for you (installs Ollama, pulls the model). Modern macOS blocks double-clicking unsigned scripts (only a <i>shell script</i> can't be notarized — the app can and is). To run it: open <b>Terminal</b>, type <code>bash&nbsp;</code> (with a trailing space), drag <code>setup.command</code> onto the window, and press Return. You never need it if you did step 3 yourself.</p>
 
 <div class="pagebreak"></div>
 
@@ -87,7 +81,8 @@
 
 <h2>Troubleshooting</h2>
 <div class="trouble">
-<p><b>"LewisWhisper can't be opened / is damaged"</b> — the app isn't in Apple's registry (it's homemade, not from the App Store). Right-click the app → <b>Open</b> → <b>Open</b>, or run <code>xattr -cr /Applications/LewisWhisper.app</code> in Terminal.</p>
+<p><b>"setup.command" Not Opened / "Apple could not verify…"</b> — that's the optional helper script, which can't be notarized. Click <b>Done</b> (never Move to Trash). You don't need it: drag <b>LewisWhisper.app</b> to Applications and open that instead (the app <i>is</i> notarized). To run the script anyway, open Terminal, type <code>bash&nbsp;</code> and drag the file in, or use <b>System Settings → Privacy &amp; Security → Open Anyway</b>.</p>
+<p><b>The app itself won't open</b> — a notarized app shouldn't be blocked, but if it is: <b>System Settings → Privacy &amp; Security → Open Anyway</b>, or <code>xattr -cr /Applications/LewisWhisper.app</code> in Terminal.</p>
 <p><b>⚠️ icon won't go away after granting permissions</b> — quit the app (menu → Quit) and reopen it. If it <i>still</i> shows ⚠️: open the System Settings pane it names, <b>remove</b> the LewisWhisper entry with the <b>−</b> button, then reopen the app and grant fresh when it asks. (macOS ties permissions to the exact copy of the app; a stale entry looks ON but does nothing.)</p>
 <p><b>Dictation pastes my exact words with the "um"s left in</b> — the cleanup AI isn't reachable. Make sure <b>Ollama</b> is running (menu bar llama icon, or just open the Ollama app) and the model is installed: <code>ollama pull gemma3:4b</code>. Dictation itself keeps working either way — you never lose words.</p>
 <p><b>Nothing happens when I hold right Option</b> — check the icon isn't ⚠️, and make sure you're using the option key on the <b>right</b> side of the space bar.</p>
