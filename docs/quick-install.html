@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>LewisWhisper — Quick Install</title>
+<style>
+  @font-face { font-family: 'Cormorant SC'; src: url('../assets/brand/verdant/fonts/cormorant-sc-latin-700-normal.ttf'); font-weight: 700; }
+  @font-face { font-family: 'Cormorant SC'; src: url('../assets/brand/verdant/fonts/cormorant-sc-latin-600-normal.ttf'); font-weight: 600; }
+  @font-face { font-family: 'Courier Prime'; src: url('../assets/brand/verdant/fonts/courier-prime-latin-400-normal.ttf'); font-weight: 400; }
+  @font-face { font-family: 'Courier Prime'; src: url('../assets/brand/verdant/fonts/courier-prime-latin-700-normal.ttf'); font-weight: 700; }
+
+  @page { margin: 0; size: letter; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: #0A130E;
+    color: #EAE4D0;
+    font-family: 'Courier Prime', 'Courier New', monospace;
+    font-size: 10.5px;
+    line-height: 1.5;
+    padding: 34px 44px 24px;
+  }
+  .brand { text-align: center; margin-bottom: 2px; }
+  .brand img { height: 74px; }
+  .credit {
+    text-align: center; color: #6E8273; font-size: 8.5px;
+    letter-spacing: 0.22em; text-transform: uppercase; margin: 4px 0 14px;
+  }
+  h1 {
+    font-family: 'Cormorant SC', serif; font-weight: 700;
+    font-size: 27px; color: #EAE4D0; text-align: center;
+    margin: 0 0 2px; letter-spacing: 0.04em;
+  }
+  .sub { text-align: center; color: #D9B670; font-size: 10px; margin: 0 0 16px; letter-spacing: 0.08em; }
+  .rule { border: none; border-top: 1px solid #2A4232; margin: 12px 0; }
+
+  .step { display: flex; gap: 12px; margin: 0 0 11px; }
+  .num {
+    flex: 0 0 26px; height: 26px; border: 1px solid #D9B670; border-radius: 50%;
+    color: #D9B670; font-family: 'Cormorant SC', serif; font-weight: 700; font-size: 15px;
+    display: flex; align-items: center; justify-content: center; margin-top: 1px;
+  }
+  .step h2 {
+    font-family: 'Cormorant SC', serif; font-weight: 600; font-size: 14.5px;
+    color: #F2CE8A; margin: 0 0 2px; letter-spacing: 0.05em;
+  }
+  .step p { margin: 0 0 3px; color: #EAE4D0; }
+  .step .dim { color: #B5B5A0; }
+  code {
+    background: #16271C; border: 1px solid #2A4232; border-radius: 3px;
+    padding: 0 4px; color: #F2CE8A; font-family: 'Courier Prime', monospace; font-size: 9.8px;
+  }
+  .panel {
+    background: #16271C; border: 1px solid #2A4232; border-left: 3px solid #D9B670;
+    border-radius: 4px; padding: 9px 12px; margin: 13px 0 0;
+  }
+  .panel b.title {
+    font-family: 'Cormorant SC', serif; color: #D9B670; font-size: 12.5px;
+    letter-spacing: 0.06em; display: block; margin-bottom: 3px;
+  }
+  .panel p { margin: 0 0 4px; color: #B5B5A0; }
+  .icons { color: #B5B5A0; }
+  .icons b { color: #EAE4D0; font-weight: 400; }
+  .footer {
+    margin-top: 14px; padding-top: 8px; border-top: 1px solid #2A4232;
+    color: #6E8273; font-size: 8.2px; text-align: center; letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  a { color: #D9B670; text-decoration: none; }
+</style>
+</head>
+<body>
+
+<div class="brand"><img src="../assets/brand/verdant/logo-cream.png" alt="Lewis IT Consulting"></div>
+<div class="credit">Lewis IT Consulting &middot; Created by Chadwick Lewis</div>
+
+<h1>LewisWhisper &mdash; Quick Install</h1>
+<p class="sub">local voice dictation &middot; new-Mac setup in five steps &middot; Apple Silicon, macOS 14+</p>
+
+<hr class="rule">
+
+<div class="step">
+  <div class="num">1</div>
+  <div>
+    <h2>Download</h2>
+    <p>Grab the latest release zip on the new Mac:</p>
+    <p><code>github.com/lewisitconsulting1/whisp/releases/latest</code> &rarr; <code>LewisWhisper-0.7.0.zip</code></p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="num">2</div>
+  <div>
+    <h2>Run the installer</h2>
+    <p>Unzip, then <b>right-click</b> <code>setup.command</code> &rarr; <b>Open</b> &rarr; <b>Open</b>.</p>
+    <p class="dim">It installs the app, opens the Ollama download if needed, and pulls the cleanup model (<code>gemma3:4b</code>, ~3.3&nbsp;GB, one time). Prefer manual? Drag <code>LewisWhisper.app</code> to Applications — it's notarized, it just opens.</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="num">3</div>
+  <div>
+    <h2>Grant three permissions</h2>
+    <p>The ⚠️ menu-bar icon walks you through: <b>Microphone</b> (click Allow) &middot; <b>Input Monitoring</b> (toggle ON) &middot; <b>Accessibility</b> (toggle ON).</p>
+    <p class="dim">Then quit the app (menu &rarr; Quit) and open it once more from Applications.</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="num">4</div>
+  <div>
+    <h2>Let it load</h2>
+    <p>First launch downloads the speech models (~2.5&nbsp;GB) — the icon shows <b>&hellip;</b> for a few minutes, then becomes the <b>soundwave</b>. That means ready.</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="num">5</div>
+  <div>
+    <h2>Dictate</h2>
+    <p><b>Hold RIGHT&nbsp;OPTION (⌥)</b>, speak, release — clean text lands wherever your cursor is.</p>
+    <p class="dim">Quick-tap instead for hands-free; it stops when you stop talking. Icons: <span class="icons"><b>soundwave</b> ready &middot; 🔴 recording &middot; ⏳ transcribing &middot; ⚠️ needs permissions</span></p>
+  </div>
+</div>
+
+<div class="panel">
+  <b class="title">Shortcut for a quick test — skip the Ollama download</b>
+  <p>New in 0.7.0: <b>Settings (⌘,) &rarr; Cleanup AI</b> can use a server you already have instead of installing models on this Mac. Pick <b>Remote Ollama server</b> and point it at your M4&nbsp;Pro (<code>http://&lt;m4-name&gt;.local:11434</code> — start Ollama there with <code>OLLAMA_HOST=0.0.0.0 ollama serve</code>), or pick a cloud provider and paste an API key (stored in the Keychain). Hit <b>Test</b> — a green ✓ means you're set. The speech models in step 4 are always local and still required.</p>
+</div>
+
+<div class="panel">
+  <b class="title">If something's off</b>
+  <p>Uncleaned "um"-filled pastes &rarr; cleanup backend unreachable — open Settings and hit <b>Test</b>. Stuck ⚠️ after granting &rarr; quit &amp; reopen; still stuck &rarr; remove the entry with &minus; in System Settings and re-grant. Nothing on hotkey &rarr; make sure it's the <b>right-side</b> Option key.</p>
+</div>
+
+<div class="footer">LewisWhisper 0.7.0 &middot; MIT &middot; github.com/lewisitconsulting1/whisp &middot; verdant terminal edition</div>
+
+</body>
+</html>
