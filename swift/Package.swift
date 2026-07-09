@@ -15,6 +15,11 @@ let package = Package(
             name: "whisp",
             dependencies: [.product(name: "FluidAudio", package: "FluidAudio")],
             swiftSettings: [.swiftLanguageMode(.v5)]
-        )
+        ),
+        .testTarget(
+            name: "whispTests",
+            dependencies: ["whisp"],
+            swiftSettings: [.swiftLanguageMode(.v5)]
+        ),
     ]
 )
