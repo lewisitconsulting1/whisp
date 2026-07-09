@@ -97,7 +97,30 @@ final class AppSettings: ObservableObject {
 struct SettingsView: View {
     @ObservedObject var settings: AppSettings
     @State private var installedModels: [String] = []
-    @State private var ollamaReachable = true
+    @State private var testing = false
+    @State private var testResult: (ok: Bool, text: String)?
+
+    private var shortName: String {
+        settings.provider.displayName.components(separatedBy: " (").first ?? settings.provider.displayName
+    }
+
+    private func runTest() {
+        testing = true
+        testResult = nil
+        let client = settings.makeCleaner()
+        Task {
+            let result = await client.test()
+            await MainActor.run {
+                testing = false
+                switch result {
+                case .success(let seconds):
+                    testResult = (true, String(format: "✓ %@ responded in %.1f s", shortName, seconds))
+                case .failure(let failure):
+                    testResult = (false, "✗ \(failure.message)")
+                }
+            }
+        }
+    }
 
     /// Lewis IT logo from the bundle; black-on-transparent, rendered as a
     /// template so it adapts to light/dark. Absent when running unbundled.
@@ -145,24 +168,57 @@ struct SettingsView: View {
                 Toggle("Sound feedback", isOn: $settings.soundFeedback)
             }
 
-            Section("Cleanup") {
+            Section("Cleanup AI") {
+                Picker("Provider", selection: $settings.provider) {
+                    ForEach(CleanupProvider.allCases, id: \.self) { p in
+                        Text(p.displayName).tag(p)
+                    }
+                }
+
+                if settings.provider.urlEditable {
+                    TextField("Server URL", text: $settings.serverURL)
+                        .autocorrectionDisabled()
+                }
+
+                if settings.provider.needsKey || settings.provider == .custom {
+                    SecureField("API key", text: $settings.apiKey)
+                }
+
                 Picker("Level", selection: $settings.level) {
                     ForEach(CleanupClient.Level.allCases, id: \.self) { lvl in
                         Text(lvl.menuTitle).tag(lvl)
                     }
                 }
+
                 if !installedModels.isEmpty {
                     Picker("Model", selection: $settings.model) {
                         ForEach(installedModels, id: \.self) { Text($0).tag($0) }
                     }
                 } else {
-                    TextField("Model", text: $settings.model)
-                    if !ollamaReachable {
-                        Text("Ollama isn't reachable — raw transcripts will be pasted until it's running.")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
+                    TextField("Model", text: $settings.model,
+                              prompt: Text(settings.provider.defaultModel.isEmpty
+                                           ? "server's loaded model" : settings.provider.defaultModel))
                 }
+
+                HStack {
+                    Button("Test") { runTest() }
+                        .disabled(testing)
+                    if testing { ProgressView().controlSize(.small) }
+                    if let result = testResult {
+                        Text(result.text)
+                            .font(.caption)
+                            .foregroundStyle(result.ok ? Color.green : Color.red)
+                            .lineLimit(2)
+                    }
+                    Spacer()
+                }
+
+                if settings.provider.isCloud {
+                    Text("Transcript text is sent to \(shortName) for cleanup. Audio never leaves this Mac — speech-to-text is always local.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
                 Toggle("Context awareness", isOn: $settings.contextAware)
                 Toggle("Learn new words automatically", isOn: $settings.learnWords)
             }
@@ -178,26 +234,55 @@ struct SettingsView: View {
         .frame(width: 460)
         .fixedSize(horizontal: false, vertical: true)
         .task { await loadModels() }
+        .onChange(of: settings.provider) { _, _ in
+            testResult = nil
+            Task { await loadModels() }
+        }
+        .onChange(of: settings.serverURL) { _, _ in
+            Task { await loadModels() }
+        }
     }
 
-    /// Populate the model picker from Ollama's local API; fall back to a
-    /// free-text field when unreachable.
+    /// Populate the model picker from the server's model list (Ollama
+    /// `/api/tags`, LM Studio/custom `/models`); cloud providers use the
+    /// free-text field with the preset default.
     private func loadModels() async {
-        struct Tags: Decodable {
-            struct Model: Decodable { let name: String }
-            let models: [Model]
-        }
-        var req = URLRequest(url: URL(string: "http://localhost:11434/api/tags")!, timeoutInterval: 2)
-        req.httpMethod = "GET"
+        installedModels = []
+        let base = settings.serverURL.isEmpty ? settings.provider.defaultBaseURL : settings.serverURL
+        let trimmed = base.hasSuffix("/") ? String(base.dropLast()) : base
+        var names: [String] = []
         do {
-            let (data, _) = try await URLSession.shared.data(for: req)
-            var names = try JSONDecoder().decode(Tags.self, from: data).models.map(\.name).sorted()
-            if !names.contains(settings.model) { names.insert(settings.model, at: 0) }
-            installedModels = names
+            switch settings.provider {
+            case .localOllama, .remoteOllama:
+                struct Tags: Decodable {
+                    struct M: Decodable { let name: String }
+                    let models: [M]
+                }
+                guard let url = URL(string: trimmed + "/api/tags") else { return }
+                let (data, _) = try await URLSession.shared.data(for: URLRequest(url: url, timeoutInterval: 2))
+                names = try JSONDecoder().decode(Tags.self, from: data).models.map(\.name).sorted()
+            case .lmStudio, .custom:
+                struct Models: Decodable {
+                    struct M: Decodable { let id: String }
+                    let data: [M]
+                }
+                guard let url = URL(string: trimmed + "/models") else { return }
+                let (data, _) = try await URLSession.shared.data(for: URLRequest(url: url, timeoutInterval: 2))
+                names = try JSONDecoder().decode(Models.self, from: data).data.map(\.id).sorted()
+            default:
+                return  // cloud providers: free-text model field
+            }
         } catch {
-            ollamaReachable = false
-            installedModels = []
+            return  // unreachable server: leave the free-text field
         }
+        guard !names.isEmpty else { return }
+        if !settings.model.isEmpty, !names.contains(settings.model) {
+            names.insert(settings.model, at: 0)
+        }
+        if settings.model.isEmpty, settings.provider == .lmStudio, let first = names.first {
+            settings.model = first
+        }
+        installedModels = names
     }
 }
 
