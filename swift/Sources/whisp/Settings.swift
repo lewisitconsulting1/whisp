@@ -16,8 +16,27 @@ final class AppSettings: ObservableObject {
     @Published var level: CleanupClient.Level {
         didSet { persist(level.rawValue, "cleanupLevel") }
     }
+    @Published var provider: CleanupProvider {
+        didSet {
+            persist(provider.rawValue, "cleanupProvider")
+            // switching providers swaps in that provider's remembered URL/model/key
+            serverURL = UserDefaults.standard.string(forKey: "serverURL.\(provider.rawValue)") ?? provider.defaultBaseURL
+            model = UserDefaults.standard.string(forKey: "model.\(provider.rawValue)") ?? provider.defaultModel
+            apiKey = KeychainStore.get(account: "apikey.\(provider.rawValue)") ?? ""
+        }
+    }
+    @Published var serverURL: String {
+        didSet { persist(serverURL, "serverURL.\(provider.rawValue)") }
+    }
     @Published var model: String {
-        didSet { persist(model, "model") }
+        didSet { persist(model, "model.\(provider.rawValue)") }
+    }
+    /// Keychain-backed mirror — the key itself is never written to UserDefaults
+    @Published var apiKey: String {
+        didSet {
+            KeychainStore.set(apiKey, account: "apikey.\(provider.rawValue)")
+            onChange?()
+        }
     }
     @Published var contextAware: Bool {
         didSet { persist(contextAware, "contextAwareness") }
@@ -41,12 +60,30 @@ final class AppSettings: ObservableObject {
         // seeding from CLI options here doesn't spuriously persist them
         self.hotkey = options.hotkey
         self.level = options.level
-        self.model = options.model
+        let storedProvider = CleanupProvider(rawValue: d.string(forKey: "cleanupProvider") ?? "") ?? .localOllama
+        self.provider = storedProvider
+        self.serverURL = d.string(forKey: "serverURL.\(storedProvider.rawValue)") ?? storedProvider.defaultBaseURL
+        // migration: pre-provider versions stored a single "model" key
+        if d.string(forKey: "model.\(CleanupProvider.localOllama.rawValue)") == nil,
+           let legacy = d.string(forKey: "model") {
+            d.set(legacy, forKey: "model.\(CleanupProvider.localOllama.rawValue)")
+        }
+        self.model = d.string(forKey: "model.\(storedProvider.rawValue)") ?? options.model
+        self.apiKey = KeychainStore.get(account: "apikey.\(storedProvider.rawValue)") ?? ""
         self.contextAware = options.contextAware
         self.autoStop = d.object(forKey: "autoStopSilence") as? Bool ?? true
         self.silenceDelay = d.object(forKey: "silenceDelay") as? Double ?? 1.2
         self.learnWords = d.object(forKey: "learnWords") as? Bool ?? true
         self.soundFeedback = d.object(forKey: "soundFeedback") as? Bool ?? true
+    }
+
+    func makeCleaner() -> CleanupClient {
+        CleanupClient(
+            provider: provider,
+            baseURL: serverURL.isEmpty ? provider.defaultBaseURL : serverURL,
+            model: model.isEmpty ? provider.defaultModel : model,
+            apiKey: apiKey.isEmpty ? nil : apiKey
+        )
     }
 
     private func persist(_ value: Any, _ key: String) {

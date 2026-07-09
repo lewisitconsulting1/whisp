@@ -104,6 +104,7 @@ final class AppController: NSObject, NSApplicationDelegate {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         monitor.onPress = { [weak self] in self?.startDictation() }
         monitor.onRelease = { [weak self] in self?.finishDictation() }
+        cleaner = settings.makeCleaner()
         settings.onChange = { [weak self] in self?.applySettings() }
 
         if Permissions.missing.isEmpty {
@@ -120,10 +121,14 @@ final class AppController: NSObject, NSApplicationDelegate {
             monitor.setKey(settings.hotkey)
             print("hotkey → \(settings.hotkey.displayName)")
         }
-        if cleaner.model != settings.model {
-            cleaner = CleanupClient(model: settings.model)
-            print("cleanup model → \(settings.model)")
-            Task { await self.cleaner.warmUp() }
+        let fresh = settings.makeCleaner()
+        if fresh.provider != cleaner.provider || fresh.model != cleaner.model
+            || fresh.baseURL != cleaner.baseURL || fresh.apiKey != cleaner.apiKey {
+            cleaner = fresh
+            print("cleanup → \(fresh.provider.displayName) · \(fresh.model.isEmpty ? "(server default)" : fresh.model)")
+            if !fresh.provider.isCloud {
+                Task { await self.cleaner.warmUp() }
+            }
         }
         rebuildMenu(blocked: !Permissions.missing.isEmpty)
     }
@@ -159,8 +164,8 @@ final class AppController: NSObject, NSApplicationDelegate {
             do {
                 let t = try await Transcriber.load()
                 self.transcriber = t
-                if self.settings.level != .off {
-                    print("warming \(self.settings.model) via Ollama...")
+                if self.settings.level != .off && !self.settings.provider.isCloud {
+                    print("warming \(self.settings.model) via \(self.settings.provider.displayName)...")
                     await self.cleaner.warmUp()
                 }
                 guard self.monitor.start() else {
